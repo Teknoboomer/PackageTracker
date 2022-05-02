@@ -1,0 +1,102 @@
+﻿@page
+@model PackageTracker.Pages.TrackingModel
+@{
+    ViewData["Title"] = "Package Tracking";
+}
+<body style='background:lightblue'>
+    <h1>@ViewData["Title"]</h1>
+
+    <style type="text/css">
+        .lightgrey {
+            background-color: lightgray;
+        }
+
+        .approved {
+            background-color: green;
+        }
+
+        .rejected {
+            background-color: red;
+        }
+
+        .pending {
+            background-color: lime;
+        }
+    </style>
+    <div>
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light border-bottom box-shadow mb-3">
+                <div class="container" style='background:lightgrey'>
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">Contoso University</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/About">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Students/Index">Students</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Courses/Index">Courses</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Instructors/Index">Instructors</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Departments/Index">Departments</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    </div>
+
+    <div id="buttonA">
+
+        <ul>
+
+            <li><a href="link1.html">Button 1</a></li>
+
+            <li><a href="link2.html">Button 2</a></li>
+
+            <li><a href="link3.html">Button 3</a></li>
+
+        </ul>
+
+    </div>
+
+    <div class="col-lg-1">
+        <form asp-page-handler="Track" method="post">
+            <button margin: 25px 5px 20px 20px; class="btn btn-default">View</button>
+            <input type="hidden" name="id" value="3" />
+        </form>
+    </div>
+
+    <fieldset>
+        <legend>Your Tracked Packages</legend>
+        <table border="1" width="100%">
+            <tr class="lightgrey">
+                <th> Tracking Number</th>
+                <th> Tracking Summary</th>
+                <th> Event Date</th>
+                <th> Note</th>
+            </tr>
+
+            @*@foreach (var history in trackingHistories)
+                {
+
+                    <tr class="@history.TrackingId">
+                        <td>@history.StatusSummary</td>
+                        <td>@history.LastEventDateTime.ToString("dd-MMMM-yyyy")</td>
+                        <td>@history.Note</td>
+                    </tr>
+                }*@
+        </table>
+
+    </fieldset>
+</body>

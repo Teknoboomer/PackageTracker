@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CrmSdk.UII.DesktopAssemblies" Version="9.0.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TrackerConfiguration\TrackerConfiguration.csproj" />
+    <ProjectReference Include="..\TrackerModel\TrackerModel.csproj" />
+    <ProjectReference Include="..\TrackingUserInteraction\TrackingUserInteraction.csproj" />
+    <ProjectReference Include="..\UspsWebRequests\UspsWebRequests.csproj" />
+  </ItemGroup>
+
+</Project>

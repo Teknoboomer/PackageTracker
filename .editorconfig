@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = none
+
+# IDE0027: Use expression body for accessors
+csharp_style_expression_bodied_accessors = false
+
+# IDE0036: Order modifiers
+dotnet_diagnostic.IDE0036.severity = none

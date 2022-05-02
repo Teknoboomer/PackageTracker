@@ -1,0 +1,426 @@
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Services.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using TrackerModel;
+using HIstoricalTracking;
+using ExternalTrackingequests;
+
+namespace TrackerVM
+{
+    public class TrackerViewModel : BindableBase
+    {
+        private int TRACKING_NUMBER_LENGTH = 22;
+        private readonly string DELETE_TRACKING_NUMBER = "Tracking number xxx";
+
+        private HistoricalTrackingAccess historicalTracking = new HistoricalTrackingAccess();
+        private IDialogService _dialogService;
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Properties for Single Tracking History
+        /// </summary>
+        ///
+        ///****************************************************************************************************
+        // Delegate command to track the entered tracking ID.
+        public DelegateCommand TrackSingleCommand { get; private set; }
+
+        private string _singleTrackingDescription;
+        public string SingleTrackingDescription
+        {
+            get { return _singleTrackingDescription; }
+            set { _ = SetProperty(ref _singleTrackingDescription, value); }
+        }
+
+        private string _singleTrackingId;
+        public string SingleTrackingId
+        {
+            get { return _singleTrackingId; }
+            set
+            {
+                _ = SetProperty(ref _singleTrackingId, value);
+
+                // Trigger CanExecute for Track button.
+                TrackSingleCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        private string _singleTrackingHistory;
+        public string SingleTrackingHistory
+        {
+            get { return _singleTrackingHistory; }
+            set { _ = SetProperty(ref _singleTrackingHistory, value); }
+        }
+
+        private Visibility _singleTrackingSummaryVisibility;
+        public Visibility SingleTrackingSummaryVisibility
+        {
+            get { return _singleTrackingSummaryVisibility; }
+            private set { _ = SetProperty(ref _singleTrackingSummaryVisibility, value); }
+        }
+
+        private TrackingRequestStatus _trackSinglePackageStatusColor = TrackingRequestStatus.NoRecord;
+        public TrackingRequestStatus TrackSinglePackageStatusColor
+        {
+            get { return _trackSinglePackageStatusColor; }
+            set { _ = SetProperty(ref _trackSinglePackageStatusColor, value); }
+        }
+
+        private string _singleTrackingSummary;
+        public string SingleTrackingSummary
+        {
+            get { return _singleTrackingSummary; }
+            private set { _ = SetProperty(ref _singleTrackingSummary, value); }
+        }
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Properties for Multiple Tracking Histories
+        /// </summary>
+        ///
+        ///****************************************************************************************************
+
+        private ObservableCollection<TrackingInfo> _multipleTrackingHistory = null;
+        public ObservableCollection<TrackingInfo> MultipleTrackingHistory
+        {
+            get { return _multipleTrackingHistory; }
+            set { _ = SetProperty(ref _multipleTrackingHistory, value); }
+        }
+
+        // History Refresh enabled is manually controlled.
+        private bool _refreshEnabled;
+        public bool RefreshEnabled
+        {
+            get { return _refreshEnabled; }
+            private set { _ = SetProperty(ref _refreshEnabled, value); }
+        }
+
+        // Delegate command to track previous tracking Ids.
+        public DelegateCommand PreviousTrackingRefresh { get; private set; }
+
+        // Delegate command to delete a previous tracking Id.
+        public DelegateCommand<object> DeleteHistoryCommand { get; private set; }
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Main View Model constructor. It attaches to the dialog service for the popups. The Delegate
+        ///     Commands for the various Buttons are also set up. Finally, some items in the View are
+        ///     initialized.
+        /// </summary>
+        /// <param name="dialogService">
+        ///     The DialogService is connected in the Unity Container.
+        /// </param>
+        ///
+        ///****************************************************************************************************
+        internal TrackerViewModel(IDialogService dialogService)
+        {
+            _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
+
+            // Set up the Command Delegates for the various buttons.
+            TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
+            DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
+            PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
+
+            // Clear the Description, Tracking Id and set the Refresh button to indicate active.
+            RefreshEnabled = true;
+            SingleTrackingDescription = "";
+            SingleTrackingId = "";
+
+            // Collapse the tracking status for the single tracking since we don't have one
+            // Get the past histories asynchronously and display them.
+            SingleTrackingSummaryVisibility = Visibility.Collapsed;
+            _ = TrackPastHistories();
+        }
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Single tracking Id processing
+        /// </summary>
+        ///
+        ///****************************************************************************************************
+
+        ///
+        /// <summary>
+        ///     Asynchronous task to track the entered Description and Tracking ID.
+        /// </summary>
+        ///
+        private async Task TrackSingle()
+        {
+            TrackingInfo singleTrackingHistory = null;
+            string response = "";
+            TrackingRequestStatus status = TrackingRequestStatus.InternalError;
+
+            await Task.Run(() =>
+            {
+                // For a better user experience, clear the tracking status and wait at least one second to populate the status again.
+                // Depending on bandwidth, updates can be subsecond and there will be the expectation that something as complicated
+                // as getting the tracking should take a while. This also lets the user know that something actually happended
+                // in the case where the status is unchanged from before.
+                DateTime start = DateTime.Now;
+                SingleTrackingSummary = "";
+
+                // Make the web call to USPS to get the tracking historiy and parse it.
+                // UPS Access Code: ADB7035AF6F2FA85
+                _singleTrackingId = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))); // Get rid of any whitespace.
+                response = USPSTrackerWebAPICall.GetTrackingFieldInfo(_singleTrackingId);
+                List<TrackingInfo> trackingHistories = USPSTrackingResponseParser.USPSParseTrackingXml(response, "");
+
+                // Wait for the rest of the one second delay.
+                TimeSpan duration = DateTime.Now - start;
+                int waitTime = 1000 - (int)duration.TotalMilliseconds;
+                if (waitTime > 0)
+                    Thread.Sleep((int)waitTime);
+
+                // Null is returned if there is an internal error with the Internet.
+                if (trackingHistories == null)
+                {
+                    SingleTrackingSummary = "There was an external error. Check the Internet connection.";
+                }
+                else
+                {
+                    // For single tracking, peel off the first tracking history result.
+                    // Set the Single Tracking Summary and status.
+                    singleTrackingHistory = trackingHistories[0];
+                    SingleTrackingSummary = singleTrackingHistory.StatusSummary;
+                    SingleTrackingHistory = singleTrackingHistory.TrackingHistory;
+                    status = singleTrackingHistory.TrackingStatus;
+                }
+
+                // Update the Single Tracking Summary and make it visible.
+                SingleTrackingSummaryVisibility = Visibility.Visible;
+                TrackSinglePackageStatusColor = status;
+            });
+
+            // If there were no errors, add this tracking to the list of tracked packages unless it is already there.
+            // Save the histories to storage.
+            if (status != TrackingRequestStatus.InternalError)
+            {
+                if (status == TrackingRequestStatus.Delivered || status == TrackingRequestStatus.InTransit)
+                {
+                    // Do not add to history if it is already there.
+                    if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
+                    {
+                        singleTrackingHistory.Description = _singleTrackingDescription;
+                        MultipleTrackingHistory.Insert(0, singleTrackingHistory);
+                        historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
+                    }
+
+                    // Clear the Description and Tracking ID.
+                    SingleTrackingDescription = "";
+                    SingleTrackingId = "";
+                }
+            }
+        }
+
+        ///
+        /// <summary>
+        ///     Enables the Track Single when the entry becomes valid.
+        /// </summary>
+        /// <returns>
+        ///     True if the tracking ID is valid.
+        /// </returns>
+        ///
+        private bool TrackSingleCanExecute()
+        {
+            // Allow spaces in the middle of the string to ease entry; i.e. as xxxx xxxx xxxx xxxx xxxx xx for USPS.
+            string nonSpace = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c)));
+            bool isValidTrackingNUmber = nonSpace.Length > 15 ?
+                nonSpace.StartsWith("1Z") && UPSCheckValidTracingNumber(nonSpace, nonSpace.Substring(nonSpace.Length - 1)) :
+                nonSpace.Length == TRACKING_NUMBER_LENGTH;
+            return isValidTrackingNUmber;
+        }
+
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Tracking History processing, initialize/update.
+        /// </summary>
+        ///
+        ///****************************************************************************************************
+
+        ///
+        /// <summary>
+        ///     Asynchronous task to refresh tracking for previous items.
+        ///     Method is invoked on startup and when the Refresh button is pressed. The
+        ///     tracking will be refreshed for all Ids that are not Delivered.
+        /// </summary>
+        ///
+        private async Task RefreshPreviousTracking()
+        {
+            // Blink the refesh buttpn gray to let the user know we did something.
+            RefreshEnabled = false;
+            await Task.Run(() =>
+            {
+                DateTime start = DateTime.Now;
+                _ = TrackPastHistories();
+                // Wait for the rest of the one second delay.
+                TimeSpan duration = DateTime.Now - start;
+                int waitTime = 1000 - (int)duration.TotalMilliseconds;
+                if (waitTime > 0)
+                    Thread.Sleep((int)waitTime);
+                RefreshEnabled = true;
+            });
+        }
+
+        ///
+        /// <summary>
+        ///     Aynchronous task to pull in all of the past histories saved in storage
+        ///     and update those that are not Delivered.
+        /// </summary>
+        ///
+        private async Task TrackPastHistories()
+        {
+            await Task.Run(() =>
+            {
+                // Delegate will be null until history loaded to turn off
+                // saving of the histories. All tracking history is saved
+                // whenever the Description is updated, which would happen
+                // each time a history is loaded if the Delegate was not null.
+                TrackingInfoDescriptionChangedNotifier.DescriptionUpdated = null;
+
+                // Retrieve past tracking histories update nondelivered tracking and parse them.
+                // WebApi calls will only be made to update nondelivered items.
+                // Convert the List to an ObservableCollection for display.
+                List<TrackingInfo> trackingList = historicalTracking.GetSavedHistories();
+                MultipleTrackingHistory = new ObservableCollection<TrackingInfo>(trackingList);
+
+                // If there was a problem with the Internet, put an error message in the single tracking summary and make it visible.
+                // A problem will show up if any of the in-transit IDs attempt to update and fail.
+                if (historicalTracking.HadInternalError)
+                {
+                    // Update the Single Tracking Summary and make it visible.
+                    SingleTrackingSummaryVisibility = Visibility.Visible;
+                    SingleTrackingSummary = historicalTracking.InternalErrorDescription;
+                    SingleTrackingHistory = historicalTracking.InternalErrorDescription;
+                    TrackSinglePackageStatusColor = TrackingRequestStatus.InternalError;
+                }
+
+                // Restore the Delegate to allow TrackingInfo to inform the VM of a Description change
+                // by the view.
+                TrackingInfoDescriptionChangedNotifier.DescriptionUpdated = (tackingInfo) =>
+                {
+                    historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
+                };
+            });
+        }
+
+        ///
+        /// <summary>
+        ///     Setup the custom dialog popup with the values for history tracking Id delete.
+        /// </summary>
+        /// <param name="trackingId">
+        ///     Our generic Diialog Delgate takes an object as a parameter for flexibility.
+        ///     In this instance, the parameter is the tracking ID, a string.
+        /// </param>
+        ///
+        private void OnDeleteHistoryCommand(object trackingId)
+        {
+            IDialogParameters parameters = new DialogParameters();
+            TrackingDialogParameters deleteParams = new TrackingDialogParameters
+            {
+                Title = "Delete Tracking Item",
+                Content = DELETE_TRACKING_NUMBER.Replace("xxx", (string)trackingId),
+                ActionLabel = "Delete",
+                CancelLabel = "Cancel",
+                ActionParams = trackingId
+            };
+
+            parameters.Add("Delete Tracking", deleteParams);
+            _dialogService.ShowDialog("DeleteTrackingDialog", parameters, OnDialogClosed);
+        }
+
+        /// <summary>
+        ///     Gets the result from the Delete Tracking dialog and acts on it.
+        /// </summary>
+        /// <param name="result">
+        ///     The only result we care about is ButtonResult.OK to indicate deletion is OK.
+        ///     The other result returned from the Delete Dialog is ButtonResult.Cancel.
+        /// </param>
+        private void OnDialogClosed(IDialogResult result)
+        {
+            if (result.Result == ButtonResult.OK)
+            {
+                TrackingDialogParameters dialogParameters = result.Parameters.GetValue<TrackingDialogParameters>("Delete Tracking");
+                string trackingId = (string)dialogParameters.ActionParams;
+
+                _multipleTrackingHistory.Remove(_multipleTrackingHistory.Where(history => history.TrackingId == trackingId).FirstOrDefault());
+                historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
+            }
+        }
+
+        //
+        // UPS Check Digit Calculation Method
+        //
+
+        private bool UPSCheckValidTracingNumber(string trackingNumber, string lastDigit)
+        {
+            int charindex = 1;
+            int runningTotal = 0;
+
+            char[] trackingChars = trackingNumber.Substring(2).ToCharArray(); // Skip the "1Z".
+            bool isEvenIndex = false; // Index starts at one
+            bool isNumeric;
+            foreach (char ch in trackingChars)
+            {
+                isNumeric = Int32.TryParse(ch.ToString(), out int convertedDigit);
+                if (isEvenIndex)
+                {
+                    runningTotal += isNumeric ? (2 * convertedDigit) : Convert.ToInt32(ch) - 48;
+                }
+                else // Indicates character in odd position
+                {
+                    if (isNumeric)
+                    {
+                        runningTotal += convertedDigit;
+                    }
+                    else // Indicates alpha value
+                    {
+                        int n = Convert.ToInt32(ch) - 48;
+                        runningTotal += ((2 * n) - (9 * (int)(n / 5)));
+                    }
+                }
+                charindex++;
+                isEvenIndex = !isEvenIndex; // Flip odd and even.
+            }
+
+            int runningTotalMod10 = runningTotal % 10;
+            int checkDigit = runningTotalMod10 == 0 ? runningTotalMod10 : (10 - runningTotalMod10);
+
+            return (checkDigit.ToString() == lastDigit);
+        }
+
+//01    UPS United States Next Day Air("Red")
+//02    UPS United States Second Day Air("Blue")
+//03    UPS United States Ground    
+//12    UPS United States Third Day Select    
+//13    UPS United States Next Day Air Saver("Red Saver")
+//15    UPS United States Next Day Air Early A.M.
+//22    UPS United States Ground - Returns Plus - Three Pickup Attempts
+//32    UPS United States Next Day Air Early A.M. - COD
+//33    UPS United States Next Day Air Early A.M. - Saturday Delivery, COD
+//41    UPS United States Next Day Air Early A.M. - Saturday Delivery    
+//42    UPS United States Ground - Signature Required    
+//44    UPS United States Next Day Air - Saturday Delivery    
+//66    UPS United States Worldwide Express
+//72    UPS United States Ground - Collect on Delivery
+//78    UPS United States Ground - Returns Plus - One Pickup Attempt
+//90    UPS United States Ground - Returns - UPS Prints and Mails Label
+//A0    UPS United States Next Day Air Early A.M. - Adult Signature Required
+//A1    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required
+//A2    UPS United States Next Day Air - Adult Signature Required
+//A8    UPS United States Ground - Adult Signature Required
+//A9    UPS United States Next Day Air Early A.M. - Adult Signature Required, COD
+//AA    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required, COD
+    }
+}

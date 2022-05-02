@@ -1,0 +1,85 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "TrackerModel/1.0.0": {
+        "dependencies": {
+          "Microsoft.CrmSdk.UII.DesktopAssemblies": "9.0.0.10"
+        },
+        "runtime": {
+          "TrackerModel.dll": {}
+        }
+      },
+      "Microsoft.CrmSdk.UII.DesktopAssemblies/9.0.0.10": {
+        "runtime": {
+          "lib/net462/Microsoft.Uii.Desktop.Core.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.Cti.Controls.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.Cti.Core.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.SessionManager.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.UI.Controls.Wpf.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.UI.Controls.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.UI.Core.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Desktop.UI.Wpf.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Practices.CompositeUI.WinForms.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Practices.CompositeUI.Windows.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Practices.CompositeUI.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          },
+          "lib/net462/Microsoft.Uii.Practices.ObjectBuilder.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "4.1.1.1397"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TrackerModel/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.CrmSdk.UII.DesktopAssemblies/9.0.0.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lz3ZsjapVLH0A1G7Ce06SrOJ8NE1SPeQBkZn2jDw4c/1xdSHAkvoffsXTyX/Ss/KEvtp+UWCITSav0eFs4KR+A==",
+      "path": "microsoft.crmsdk.uii.desktopassemblies/9.0.0.10",
+      "hashPath": "microsoft.crmsdk.uii.desktopassemblies.9.0.0.10.nupkg.sha512"
+    }
+  }
+}
