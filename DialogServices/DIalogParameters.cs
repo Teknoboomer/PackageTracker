@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace DialogServices
 {
-    internal class DIalogParametersz : IDialogParameters
+    internal class DialogParameters : IDialogParameters
     {
         private IDictionary<string, object> parameters = new Dictionary<string, object>();
 
