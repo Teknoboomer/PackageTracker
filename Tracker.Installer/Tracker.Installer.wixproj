@@ -30,14 +30,6 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
-    <ProjectReference Include="..\PackageTrackerWPF\TrackerViews.csproj">
-      <Name>TrackerViews</Name>
-      <Project>{dd56cb6e-4e33-404b-90f0-7dbad336dcab}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
     <ProjectReference Include="..\TrackerConfiguration\TrackerConfiguration.csproj">
       <Name>TrackerConfiguration</Name>
       <Project>{fac6761f-d72f-4b97-80c7-126e59254984}</Project>
@@ -49,14 +41,6 @@
     <ProjectReference Include="..\TrackerModel\TrackerModels.csproj">
       <Name>TrackerModels</Name>
       <Project>{11087023-0869-4033-a6d9-655f835f39ef}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\TrackerViewModel\TrackerViewModels.csproj">
-      <Name>TrackerViewModels</Name>
-      <Project>{a00b5cc9-8330-4bd2-aed5-d1b1a9a448eb}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>

@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TrackerModel\TrackerModels.csproj" />
-    <ProjectReference Include="..\UspsWebRequests\TrackingRequests.csproj" />
+    <ProjectReference Include="..\TrackingRequests\TrackingRequests.csproj" />
   </ItemGroup>
 
 </Project>

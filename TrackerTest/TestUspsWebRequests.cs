@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using TrackerModel;
 using ExternalTrackingequests;
 using System;
-using HIstoricalTracking;
+using HistoricalTracking;
 using TrackerConfiguration;
 using System.IO;
 
