@@ -142,7 +142,6 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="Button.IsEnabled" Value="True">
                                 <Setter Property="BorderBrush" TargetName="topTrackBorder" Value="Green"/>
-                                <!--<Setter Property="BorderBrush" TargetName="bottomTrackBorder" Value="Green"/>-->
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
