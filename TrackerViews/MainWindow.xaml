@@ -31,9 +31,6 @@
                                 <TextBlock Text="Description" Style="{DynamicResource TitleText}"/>
                                 <TextBox Style="{DynamicResource SingleTrackerDataTextBox}" Text="{Binding SingleTrackingDescription}"
                                          Width="870">
-                                    <TextBox.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding SaveTrackingDescription}"/>
-                                    </TextBox.InputBindings>
                                 </TextBox>
                             </StackPanel>
                         </Border>
@@ -95,8 +92,8 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                            
-                                <Label Grid.Row="0" Grid.Column="0" Content="{Binding TrackingId}" BorderBrush="Gray" BorderThickness="0,0,2,0" />
+
+                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0" />
                                 <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
 
                                 <Button  Grid.Row="0" Grid.Column="2"  VerticalAlignment="Bottom" Background="LightGray"

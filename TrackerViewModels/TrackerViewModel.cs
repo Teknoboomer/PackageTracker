@@ -205,7 +205,7 @@ namespace TrackerVM
             // Save the histories to storage.
             if (status != TrackingRequestStatus.InternalError)
             {
-                if (status == TrackingRequestStatus.Delivered || status == TrackingRequestStatus.InTransit)
+                if (status == TrackingRequestStatus.Delivered || status == TrackingRequestStatus.InTransit || status == TrackingRequestStatus.NoRecord)
                 {
                     // Do not add to history if it is already there.
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
@@ -372,7 +372,7 @@ namespace TrackerVM
         /// </param>
         private bool UPSCheckValidTrackingNumber(string trackingNumber)
         {
-            int charindex = 1;
+            int charindex = 0;
             int runningTotal = 0;
 
             
