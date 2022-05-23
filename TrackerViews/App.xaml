@@ -11,6 +11,7 @@
         <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3"/>
         <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA"/>
         <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5"/>
+
         <!--Style for page titles-->
         <Style BasedOn="{StaticResource {x:Type TextBlock}}"
            TargetType="TextBlock"
@@ -23,7 +24,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
-        
+
         <!--Style for section titles-->
         <Style BasedOn="{StaticResource {x:Type TextBlock}}"
            TargetType="TextBlock"
@@ -151,6 +152,26 @@
             <Setter Property="Height" Value="auto" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+
+        <!--3D look for buttons along with enabled color-->
+        <Style x:Key="DeleteButtonStyle" TargetType="{x:Type Button}" >
+            <Setter Property="Content" Value="X" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Red"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="ListViewBorderedItem" TargetType="ListViewItem">

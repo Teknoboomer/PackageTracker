@@ -9,25 +9,25 @@
         xmlns:local="clr-namespace:PackageTrackerWPF"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        SizeToContent="Height"
-        Title="Package Tracker" Width="1300" Background="DarkBlue">
+        SizeToContent="WidthAndHeight"
+        Title="Package Tracker" Background="DarkBlue">
     <Window.Resources>
         <local:TrackingStatusConverter x:Key="TrackingStatusConverter" />
     </Window.Resources>
     <Grid Background="LightBlue" Width="auto" >
-        <StackPanel Height="Auto" Margin="10,10,10,10" Orientation="Vertical" Width="auto" >
+        <StackPanel Height="Auto" Margin="10,10,10,10" Orientation="Vertical" >
             <!-- Main Title -->
             <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,20,0,20" ></TextBlock>
 
             <!-- Block for Single Tracking Number Entry and presentation of Status Summary -->
             <Grid Background="LightBlue" Width="auto">
-                <StackPanel Orientation="Vertical" Width="auto">
+                <StackPanel Orientation="Vertical" >
                     <TextBlock Style="{DynamicResource SubTitleText}" Text = "Tracking" Margin = "0,10,0,10" ></TextBlock>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="auto">
-                        
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
+
                         <!-- Single tracker Description -->
                         <Border Style="{DynamicResource ShadedPanelBorder}" HorizontalAlignment="Left" VerticalAlignment="Center">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Width="auto">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" >
                                 <TextBlock Text="Description" Style="{DynamicResource TitleText}"/>
                                 <TextBox Style="{DynamicResource SingleTrackerDataTextBox}" Text="{Binding SingleTrackingDescription}"
                                          Width="870">
@@ -35,24 +35,24 @@
                             </StackPanel>
                         </Border>
                         <!-- Single tracker Tracking Number -->
-                        <Border Style="{DynamicResource ShadedPanelBorder}" HorizontalAlignment="Left" VerticalAlignment="Center">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="auto">
-                                <TextBlock Text="Tracking Number" Style="{DynamicResource TitleText}"/>
+                        <Border Style="{DynamicResource ShadedPanelBorder}" HorizontalAlignment="Left" VerticalAlignment="Center" >
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" >
+                                <TextBlock Text="Tracking Number" Style="{DynamicResource TitleText}" />
                                 <TextBox  Style="{DynamicResource SingleTrackerDataTextBox}" Text="{Binding SingleTrackingId, UpdateSourceTrigger=PropertyChanged}"  
                                          Width="245"/>
                             </StackPanel>
                         </Border>
                         <Button Style="{DynamicResource Button3DStyle}" Content="Track" Command="{Binding TrackSingleCommand}" />
                     </StackPanel>
-                    
+
                     <!-- Single tracker Status Summary. Visibility and Background controlled from VM -->
                     <StackPanel Visibility="{Binding SingleTrackingSummaryVisibility}">
                         <TextBlock  Style="{DynamicResource TitleText}" Text="Tracking Summary" Margin="0,10,0,10"/>
                         <Border BorderThickness="1" CornerRadius="3.2" BorderBrush="Black" Padding="10" >
                             <TextBox Text="{Binding SingleTrackingSummary, Mode=OneWay}" Background="{Binding TrackSinglePackageStatusColor, Converter={StaticResource TrackingStatusConverter}}"
-                                     TextWrapping="Wrap" BorderThickness="0" FontSize="20" FontWeight="Bold" Height="auto" Width="auto"/>
+                                     TextWrapping="Wrap" BorderThickness="0" FontSize="20" FontWeight="Bold" />
                         </Border>
-                            <Expander Width="auto" HorizontalContentAlignment="Stretch">
+                        <Expander Width="auto" HorizontalContentAlignment="Stretch">
                             <Expander.Header>
                                 <BulletDecorator>
                                     <BulletDecorator.Bullet>
@@ -60,11 +60,11 @@
                                     </BulletDecorator.Bullet>
                                     <TextBlock  Style="{DynamicResource TitleText}" Text="Event History" />
                                 </BulletDecorator>
-                                </Expander.Header>
-                                <Expander.Content>
-                                    <TextBox Style="{DynamicResource TrackingHistoryTextBox}" TextWrapping="Wrap" Text="{Binding SingleTrackingHistory}"/>
-                                </Expander.Content>
-                            </Expander>
+                            </Expander.Header>
+                            <Expander.Content>
+                                <TextBox Style="{DynamicResource TrackingHistoryTextBox}" TextWrapping="Wrap" Text="{Binding SingleTrackingHistory}"/>
+                            </Expander.Content>
+                        </Expander>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -82,31 +82,30 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="Black" BorderThickness="2"  Background="Ivory">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0" />
-                                <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
+                                    <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0" />
+                                    <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
 
-                                <Button  Grid.Row="0" Grid.Column="2"  VerticalAlignment="Bottom" Background="LightGray"
+                                    <Button  Style="{DynamicResource DeleteButtonStyle}" Grid.Row="0" Grid.Column="2" VerticalAlignment="Bottom"
                                     Command="{Binding Path=DataContext.DeleteHistoryCommand, RelativeSource= {RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-                                    CommandParameter ="{Binding TrackingId}">
-                                    <materialDesign:PackIcon Kind="Delete" Foreground="#FF797D79" Width="15" Height="15" />
-                                </Button>
-                                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="0,2,0,0" Padding="3">
-                                    <Expander Header="{Binding StatusSummary, Mode=OneWay}" Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}" >
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding TrackingHistory}" />
-                                    </Expander>
-                                </Border>
-                            </Grid>
+                                    CommandParameter ="{Binding TrackingId}" Content="X">
+                                    </Button>
+                                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="0,2,0,0" Padding="3">
+                                        <Expander Header="{Binding StatusSummary, Mode=OneWay}" Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}" >
+                                            <TextBlock TextWrapping="Wrap" Text="{Binding TrackingHistory}" />
+                                        </Expander>
+                                    </Border>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
