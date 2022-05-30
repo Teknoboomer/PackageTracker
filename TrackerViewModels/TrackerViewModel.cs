@@ -139,17 +139,6 @@ namespace TrackerVM
             // Get the past histories asynchronously and display them.
             SingleTrackingSummaryVisibility = Visibility.Collapsed;
             _ = TrackPastHistories();
-
-            // Action to close all other expanded expanders in Tracking History list when one is expanded.
-            // The Action is invoked in TrackingInfo when the IsExpanded binding is actived and Enabled.
-            TrackingInfoChangedNotifier.ExpanderUpdated = (tackingInfo) =>
-            {
-                for (int i = 0; i < MultipleTrackingHistory.Count; i++)
-                {
-                    if (MultipleTrackingHistory[i].IsExpanded && MultipleTrackingHistory[i].TrackingId != tackingInfo.TrackingId)
-                        MultipleTrackingHistory[i] = new TrackingInfo(MultipleTrackingHistory[i]);
-                }
-            };
         }
 
         ///****************************************************************************************************
@@ -282,7 +271,7 @@ namespace TrackerVM
                     Thread.Sleep((int)waitTime);
                 RefreshEnabled = true;
 
-                // Clear the Single Tracking Summary and make it collapsed to remove old information.
+                // Clear the Single Tracking Summary and make it visible.
                 SingleTrackingSummary = "";
                 SingleTrackingSummaryVisibility = Visibility.Collapsed;
             });
@@ -302,9 +291,9 @@ namespace TrackerVM
                 // saving of the histories. All tracking history is saved
                 // whenever the Description is updated, which would happen
                 // each time a history is loaded if the Delegate was not null.
-                TrackingInfoChangedNotifier.DescriptionUpdated = null;
+                TrackingInfoDescriptionChangedNotifier.DescriptionUpdated = null;
 
-                // Retrieve past tracking histories while pdating nondelivered tracking and parse them.
+                // Retrieve past tracking histories update nondelivered tracking and parse them.
                 // WebApi calls will only be made to update nondelivered items.
                 // Convert the List to an ObservableCollection for display.
                 List<TrackingInfo> trackingList = historicalTracking.GetSavedHistories();
@@ -321,9 +310,9 @@ namespace TrackerVM
                     TrackSinglePackageStatusColor = TrackingRequestStatus.InternalError;
                 }
 
-                // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
+                // Restore the Delegate to allow TrackingInfo to inform the VM of a Description change
                 // by the view.
-                TrackingInfoChangedNotifier.DescriptionUpdated = (tackingInfo) =>
+                TrackingInfoDescriptionChangedNotifier.DescriptionUpdated = (tackingInfo) =>
                 {
                     historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
                 };
