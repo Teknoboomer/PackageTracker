@@ -1,7 +1,13 @@
 ﻿using System;
 
 namespace TrackerModel
-{
+    {/// <summary>
+    /// 
+    /// These are the state that a package can be in.
+    /// The state is used to color the display of the information.
+    /// The associated color can be found in TrackingStatusConverter.cs under TrackingViews.
+    /// 
+    /// </summary>
     public enum TrackingRequestStatus
     {
         Delivered,
@@ -10,6 +16,14 @@ namespace TrackerModel
         Lost,
         InternalError
     }
+
+    /// <summary>
+    /// 
+    /// This is the information stored for each package. It is designed
+    /// to be independent of the carrier. All historical data is stored either in
+    /// an XML file or, alternatively, in a database.
+    /// 
+    /// </summary>
     public class TrackingInfo
     {
         public string TrackingId { get; set; }
@@ -20,6 +34,10 @@ namespace TrackerModel
         public TrackingRequestStatus TrackingStatus { get; set; }
         public string StatusSummary { get; set; }
         public string TrackingHistory { get; set; }
+        public DateTime LastEventDateTime { get; set; }
+        public DateTime FirstEventDateTime { get; set; }
+        public bool TrackingComplete { get; set; }
+
         private string _description;
         public string Description
         {
@@ -34,12 +52,26 @@ namespace TrackerModel
                 // Delegate will be null until history loaded to turn off
                 // saving of the histories. A tracking history is saved
                 // whenever the Description is updated. 
-                TrackingInfoDescriptionChangedNotifier.DescriptionUpdated?.Invoke(this);
+                TrackingInfoChangedNotifier.DescriptionUpdated?.Invoke(this);
             }
         }
-        public DateTime LastEventDateTime { get; set; }
-        public DateTime FirstEventDateTime { get; set; }
-        public bool TrackingComplete { get; set; }
+        private bool _isExpanded = false;
+        public bool IsExpanded
+        {
+            get
+            {
+                return _isExpanded;
+            }
+            set
+            {
+                _isExpanded = value;
+
+                // Collapse any other expanded items.
+                if (value)
+                    TrackingInfoChangedNotifier.ExpanderUpdated?.Invoke(this);
+
+            }
+        }
 
         public TrackingInfo()
         {
@@ -54,6 +86,25 @@ namespace TrackerModel
             TrackingHistory = "";
             TrackingComplete = false;
             Inbound = false;
+        }
+
+        /// <summary>
+        /// Clone the TrackingInfo object.
+        /// </summary>
+        /// <param name="info"></param>
+        public TrackingInfo(TrackingInfo info)
+        {
+            LastEventDateTime = info.LastEventDateTime;
+            FirstEventDateTime = info.FirstEventDateTime;
+            CityState = info.CityState;
+            DeliveryZip = info.DeliveryZip; ;
+            TrackingId = info.TrackingId;
+            Description = info.Description;
+            TrackingStatus = info.TrackingStatus;
+            StatusSummary = info.StatusSummary;
+            TrackingHistory = info.TrackingHistory;
+            TrackingComplete = info.TrackingComplete;
+            Inbound = info.Inbound;
         }
     }
 }

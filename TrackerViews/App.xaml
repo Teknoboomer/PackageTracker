@@ -119,7 +119,7 @@
                     <ControlTemplate TargetType="{x:Type ButtonBase}">
                         <Border CornerRadius="5" Background="{TemplateBinding Background}" Width="auto">
                             <Grid>
-                                <Border Name="topTrackBorder" BorderThickness="3,3,0,0" Margin="2" Opacity="0.7" CornerRadius="{Binding ElementName=button, Path=CornerRadius}">
+                                <Border Name="topTrackBorder" BorderThickness="3,3,0,0" Margin="2" Opacity="0.7" >
                                     <Border.BorderBrush>
                                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                                             <GradientStop Color="White"/>
@@ -130,8 +130,9 @@
                                         <BlurEffect Radius="2" KernelType="Gaussian"/>
                                     </Border.Effect>
                                 </Border>
-                                <Border Name="bottomTrackBorder" BorderThickness="0,0,2,2" BorderBrush="Black" CornerRadius="{Binding ElementName=button, Path=CornerRadius}">
-                                    <Border.Effect>
+                                <!--<Border Name="bottomTrackBorder" BorderThickness="0,0,2,2" BorderBrush="Black" CornerRadius="{Binding ElementName=button, Path=CornerRadius}">-->
+                                    <Border Name="bottomTrackBorder" BorderThickness="0,0,2,2" BorderBrush="Black" >
+                                        <Border.Effect>
                                         <BlurEffect Radius="2" KernelType="Gaussian"/>
                                     </Border.Effect>
                                 </Border>

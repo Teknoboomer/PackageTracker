@@ -7,11 +7,11 @@ namespace PackageTrackerWPF
 {
     public class TrackingStatusConverter : IValueConverter
     {
-        private SolidColorBrush _deliveredColor = new SolidColorBrush(Colors.PaleGreen);
-        private SolidColorBrush _inTransitColor = new SolidColorBrush(Colors.LightCyan);
-        private SolidColorBrush _noRecordColor = new SolidColorBrush(Colors.LightPink);
-        private SolidColorBrush _errorColor = new SolidColorBrush(Colors.Tomato);
-        private SolidColorBrush _lostColor = new SolidColorBrush(Colors.Gray);
+        private readonly SolidColorBrush _deliveredColor = new SolidColorBrush(Colors.PaleGreen);
+        private readonly SolidColorBrush _inTransitColor = new SolidColorBrush(Colors.LightCyan);
+        private readonly SolidColorBrush _noRecordColor = new SolidColorBrush(Colors.LightPink);
+        private readonly SolidColorBrush _errorColor = new SolidColorBrush(Colors.Tomato);
+        private readonly SolidColorBrush _lostColor = new SolidColorBrush(Colors.Gray);
 
         public object Convert(object status, Type targetType, object target, System.Globalization.CultureInfo culture)
         {
