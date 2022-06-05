@@ -130,7 +130,6 @@
                                         <BlurEffect Radius="2" KernelType="Gaussian"/>
                                     </Border.Effect>
                                 </Border>
-                                <!--<Border Name="bottomTrackBorder" BorderThickness="0,0,2,2" BorderBrush="Black" CornerRadius="{Binding ElementName=button, Path=CornerRadius}">-->
                                 <Border Name="bottomTrackBorder" BorderThickness="0,0,2,2" BorderBrush="Black" >
                                     <Border.Effect>
                                         <BlurEffect Radius="2" KernelType="Gaussian"/>
