@@ -1,13 +1,13 @@
 ﻿using System;
 
 namespace TrackerModel
-    {/// <summary>
-    /// 
-    /// These are the state that a package can be in.
-    /// The state is used to color the display of the information.
-    /// The associated color can be found in TrackingStatusConverter.cs under TrackingViews.
-    /// 
-    /// </summary>
+{/// <summary>
+ /// 
+ /// These are the state that a package can be in.
+ /// The state is used to color the display of the information.
+ /// The associated color can be found in TrackingStatusConverter.cs under TrackingViews.
+ /// 
+ /// </summary>
     public enum TrackingRequestStatus
     {
         Delivered,

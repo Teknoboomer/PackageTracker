@@ -21,7 +21,7 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Height="Auto" Margin="10,10,10,10" Orientation="Vertical" >
+        <StackPanel Grid.Row="0" Height="Auto" Width="1220" Margin="10,10,10,10" Orientation="Vertical" >
             <!-- Main Title -->
             <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,20,0,20" ></TextBlock>
 
@@ -45,10 +45,11 @@
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Left" >
                                 <TextBlock Text="Tracking Number" Style="{DynamicResource TitleText}" />
                                 <TextBox  Style="{DynamicResource SingleTrackerDataTextBox}" Text="{Binding SingleTrackingId, UpdateSourceTrigger=PropertyChanged}"  
-                                         Width="245"/>
+                                         Width="250"/>
                             </StackPanel>
                         </Border>
-                        <Button Style="{DynamicResource Button3DStyle}" Content="Track" Command="{Binding TrackSingleCommand}" />
+                        <!-- Single tracker Track button -->
+                        <Button Style="{DynamicResource Button3DStyle}" Margin="4,0,0,0" Content="Track" Command="{Binding TrackSingleCommand}" />
                     </StackPanel>
 
                     <!-- Single tracker Status Summary. Visibility and Background controlled from VM -->
@@ -56,7 +57,7 @@
                         <TextBlock  Style="{DynamicResource TitleText}" Text="Tracking Summary" Margin="0,10,0,10"/>
                         <Border BorderThickness="1" CornerRadius="3.2" BorderBrush="Black" Padding="10" >
                             <TextBox Text="{Binding SingleTrackingSummary, Mode=OneWay}" Background="{Binding TrackSinglePackageStatusColor, Converter={StaticResource TrackingStatusConverter}}"
-                                     TextWrapping="Wrap" BorderThickness="0" FontSize="20" FontWeight="Bold" />
+                                     HorizontalAlignment="Left" Width="auto" TextWrapping="Wrap" BorderThickness="0" FontSize="20" FontWeight="Bold" />
                         </Border>
                         <Expander Width="auto" HorizontalContentAlignment="Stretch" >
                             <Expander.Header>
@@ -79,10 +80,12 @@
         <!-- Separator between single tracker and historical list -->
         <Separator Grid.Row="1" Height="2" BorderThickness="50" BorderBrush="DarkBlue" Margin="0,10,0,10"/>
 
+        <!-- Block for Multiple Tracking -->
         <DockPanel Grid.Row="2" >
             <TextBlock Style="{DynamicResource SubTitleText}" Text = "Tracked Items" Margin = "0,0,0,0" DockPanel.Dock="Top"></TextBlock>
 
-            <Button Style="{DynamicResource Button3DStyle}" Content="Refresh" Command="{Binding PreviousTrackingRefresh}" IsEnabled="{Binding RefreshEnabled}" DockPanel.Dock="Top"/>
+            <Button Style="{DynamicResource Button3DStyle}" Content="Refresh" Command="{Binding PreviousTrackingRefresh}" IsEnabled="{Binding RefreshEnabled}" DockPanel.Dock="Top"
+                    Margin="5,0,0,2"/>
 
             <ListView ItemContainerStyle="{StaticResource ListViewBorderedItem}" ItemsSource="{Binding MultipleTrackingHistory}"
                         DockPanel.Dock="Bottom" Height="auto" Margin ="5,5,5,20" >

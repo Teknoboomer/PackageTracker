@@ -386,7 +386,7 @@ namespace TrackerVM
             int charindex = 0;
             int runningTotal = 0;
 
-            
+
             string lastDigit = trackingNumber.Substring(trackingNumber.Length - 1);
             char[] trackingChars = trackingNumber.Substring(2).ToCharArray(); // Skip the "1Z".
 
@@ -420,27 +420,27 @@ namespace TrackerVM
 
             return (checkDigit.ToString() == lastDigit);
         }
-//01    UPS United States Next Day Air("Red")
-//02    UPS United States Second Day Air("Blue")
-//03    UPS United States Ground    
-//12    UPS United States Third Day Select    
-//13    UPS United States Next Day Air Saver("Red Saver")
-//15    UPS United States Next Day Air Early A.M.
-//22    UPS United States Ground - Returns Plus - Three Pickup Attempts
-//32    UPS United States Next Day Air Early A.M. - COD
-//33    UPS United States Next Day Air Early A.M. - Saturday Delivery, COD
-//41    UPS United States Next Day Air Early A.M. - Saturday Delivery    
-//42    UPS United States Ground - Signature Required    
-//44    UPS United States Next Day Air - Saturday Delivery    
-//66    UPS United States Worldwide Express
-//72    UPS United States Ground - Collect on Delivery
-//78    UPS United States Ground - Returns Plus - One Pickup Attempt
-//90    UPS United States Ground - Returns - UPS Prints and Mails Label
-//A0    UPS United States Next Day Air Early A.M. - Adult Signature Required
-//A1    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required
-//A2    UPS United States Next Day Air - Adult Signature Required
-//A8    UPS United States Ground - Adult Signature Required
-//A9    UPS United States Next Day Air Early A.M. - Adult Signature Required, COD
-//AA    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required, COD
+        //01    UPS United States Next Day Air("Red")
+        //02    UPS United States Second Day Air("Blue")
+        //03    UPS United States Ground    
+        //12    UPS United States Third Day Select    
+        //13    UPS United States Next Day Air Saver("Red Saver")
+        //15    UPS United States Next Day Air Early A.M.
+        //22    UPS United States Ground - Returns Plus - Three Pickup Attempts
+        //32    UPS United States Next Day Air Early A.M. - COD
+        //33    UPS United States Next Day Air Early A.M. - Saturday Delivery, COD
+        //41    UPS United States Next Day Air Early A.M. - Saturday Delivery    
+        //42    UPS United States Ground - Signature Required    
+        //44    UPS United States Next Day Air - Saturday Delivery    
+        //66    UPS United States Worldwide Express
+        //72    UPS United States Ground - Collect on Delivery
+        //78    UPS United States Ground - Returns Plus - One Pickup Attempt
+        //90    UPS United States Ground - Returns - UPS Prints and Mails Label
+        //A0    UPS United States Next Day Air Early A.M. - Adult Signature Required
+        //A1    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required
+        //A2    UPS United States Next Day Air - Adult Signature Required
+        //A8    UPS United States Ground - Adult Signature Required
+        //A9    UPS United States Next Day Air Early A.M. - Adult Signature Required, COD
+        //AA    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required, COD
     }
 }
