@@ -103,7 +103,8 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0" />
+                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0"
+                                         Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}"/>
                                 <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
 
                                 <Button  Style="{DynamicResource DeleteButtonStyle}" Grid.Row="0" Grid.Column="2" VerticalAlignment="Bottom"
@@ -112,7 +113,7 @@
                                 </Button>
                                 <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="0,2,0,0" Padding="3">
                                     <Expander Header="{Binding StatusSummary, Mode=OneWay}"
-                                              Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}"
+                                              
                                         IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
                                         <TextBlock TextWrapping="Wrap" Text="{Binding TrackingHistory}" />
                                     </Expander>
