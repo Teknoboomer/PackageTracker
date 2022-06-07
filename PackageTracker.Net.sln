@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageTracker.Net", "PackageTracker.Net.csproj", "{27D34C65-9C3A-4025-B23D-B62BA1C7183A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27D34C65-9C3A-4025-B23D-B62BA1C7183A}.Debug|x86.ActiveCfg = Debug|x86
+		{27D34C65-9C3A-4025-B23D-B62BA1C7183A}.Debug|x86.Build.0 = Debug|x86
+		{27D34C65-9C3A-4025-B23D-B62BA1C7183A}.Release|x86.ActiveCfg = Release|x86
+		{27D34C65-9C3A-4025-B23D-B62BA1C7183A}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7937D250-8D57-4654-90F5-9CB40E0B60D6}
+	EndGlobalSection
+EndGlobal
