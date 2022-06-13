@@ -92,7 +92,7 @@ namespace HistoricalTracking
                 // Do not update outdated undelivered tracking requests. USPS IDs for valid for only 120 days.
                 if (!history.TrackingComplete && history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
                 {
-                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfo(history.TrackingId);
+                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfoAsync(history.TrackingId);
                     if (response.StartsWith("Error"))
                     {
                         HadInternalError = true;

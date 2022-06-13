@@ -8,7 +8,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
         xmlns:local="clr-namespace:PackageTrackerWPF"
         mc:Ignorable="d"
-  WindowState="Maximized"
+        WindowState="Maximized"
         Title="Package Tracker" Background="DarkBlue">
     <Window.Resources>
         <local:TrackingStatusConverter x:Key="TrackingStatusConverter" />

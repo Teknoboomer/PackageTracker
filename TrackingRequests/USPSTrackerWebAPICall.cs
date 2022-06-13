@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using TrackerConfiguration;
 
 namespace ExternalTrackingequests
@@ -8,6 +10,9 @@ namespace ExternalTrackingequests
     //
     public static class USPSTrackerWebAPICall
     {
+        // HttpClient is intended to be instantiated once per application, rather than per-use.
+        static readonly HttpClient _httpClient = new HttpClient();
+
         /// <summary>
         ///     Uses the tracking id to build the XML request to the USPS.
         ///     Then uses WebClient to make the web API call. 
@@ -24,9 +29,10 @@ namespace ExternalTrackingequests
         ///     The class TrackingUSPSResponseParser can be referenced as to what
         ///     fields are utilized from the XML.
         /// </returns>
-        public static string GetTrackingFieldInfo(string trackingRequest)
+
+        public static string GetTrackingFieldInfoAsync(string trackingRequest)
         {
-            string response;
+            string response = null;
 
             // Build the request.
             string request = TrackerConfig.UspsTrackingFieldUrl + " &XML=<TrackFieldRequest USERID=\"" + TrackerConfig.UspsTrackingUserId +
@@ -34,19 +40,16 @@ namespace ExternalTrackingequests
             request += "<TrackID ID = \"" + trackingRequest + "\"></TrackID>";
             request += "</TrackFieldRequest>";
 
-            // Get the response.
-            try
-            {
-                using (WebClient client = new WebClient())
+                try
                 {
-                    response = client.DownloadString(request); // Uses GET
+                    response = _httpClient.GetStringAsync(request).Result; // Uses GET
                 }
-            }
-            catch (WebException)
-            {
-                response = "Error: There was a problem reaching the USPS website. Check the Internet connection.";
-            }
+                catch (WebException)
+                {
+                    response = "Error: There was a problem reaching the USPS website. Check the Internet connection.";
+                }
 
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             return response;
         }
     }

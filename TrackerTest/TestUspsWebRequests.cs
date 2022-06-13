@@ -34,7 +34,7 @@ namespace TrackerTest
         public void ActiveUSPSWebServiceCall()
         {
             string knownResponse = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Error><Number>80040B19</Number><Description>XML Syntax Error: Please check the XML request to see if it can be parsed.(B)</Description><Source>USPSCOM::DoAuth</Source></Error>";
-            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("EJ123456780US");
+            string response = USPSTrackerWebAPICall.GetTrackingFieldInfoAsync("EJ123456780US");
 
             Assert.AreEqual(knownResponse, response);
         }
