@@ -41,13 +41,24 @@ clicking on an expander. The startup project is TrackerViews.
 The project is still under construction with a plan to add UPS tracking and possibly archival of past
 tracking. Code features from later versions of C# are being added as their usefulness is encountered.
 
-Coding style elements of note are:
+3) Coding style
+
+Major coding style elements of note are:
   a) The left curly brace style is used.
   b) Braces are almost exclusively on a separate line.
-  c) The keyword **var** is never used; its use is set as an error in the environment.
+  c) The keyword **var** is never used; its use is set as an error in my environment.
   d) Abstract classes are preferred over Interfaces.
   e) Interfaces are never used where a class reference works.
+  f) Repetitive code is collected into methods.
+  g) Names are camel case with methods names capitalized, variables lower case,
+  	globals names start with an underscore.
+  h) Blank lines are used regularly for clarity.
+  i) Statements will span multiple lines whenever it enhances clarity.
+  j) Local variables are used to provide clarity, e.g. "trackingNumberArray[i]"
+  	will be extracted to "valueToSum" for use in a block of code.
 	
+4) Note on Cut and Pasting of Code with Example (and more philosophy)
+
 All code is original with the exception of the validation of the UPS tracking number. I have
 displayed the "borrowed" code and what was incorporated into the project. It serves to
 demonstrate what I mean by "least lines" and the drive for simple code. It is also an example
@@ -140,7 +151,7 @@ Here is the borrowed code:
             }
 
             // Extract single digit from sum.
-            // Round to the next highest ten (122 becomes 130) then subtract the sum, which gives 8.
+            // Round to the next highest ten (122 becomes 130) then subtract the sum (which gives 8).
             checkDigit = (int)(Math.Ceiling(sum / 10.0d) * 10) - sum;
 
             // If the last digit matches the check digit the number is valid.
