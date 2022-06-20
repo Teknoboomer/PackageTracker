@@ -378,19 +378,19 @@ namespace TrackerVM
         ///     Tracking number is at least 10 characters long.
         /// </summary>
         /// <param name="trackingNumber">
-        ///     The UPS tracking number (string) 1Z53Y6119069073535 1z9e79559027281578
+        ///     The UPS tracking number (string) 1Z 53Y6 1190 6907 3535 1z9e79559027281578
         /// </param>
         private static bool IsvalidUPSCheckDigit(string trackingNumber)
         {
-            if (trackingNumber.Length < 10)
+            if (trackingNumber.Length < 18) // Minimum length of UPS tracking number.
                 return false;
 
-            char[] trackingNumberArray = trackingNumber.ToUpper().ToCharArray();
-            int checkDigit = 0;
             int sum = 0;
+            int checkDigit = 0;
+            char[] trackingNumberArray = trackingNumber.ToUpper().ToCharArray();
             int lastDigit = trackingNumberArray[trackingNumber.Length - 1] - '0';
 
-            // Loop through the array calculating the checksum.
+            // Loop through the array calculating the checksum starting after the "1Z".
             for (int i = 2; i < trackingNumber.Length - 1; i++)
             {
                 int valueToSum = trackingNumberArray[i];
@@ -408,56 +408,12 @@ namespace TrackerVM
                 sum += (i % 2 == 0) ? valueToSum : valueToSum * 2; // Double it if is an odd index.
             }
 
-            checkDigit = (int)(Math.Ceiling(sum / 10.0d) * 10) - sum; // round to the next highest ten (71 becomes 80)
+            // Extract single digit from sum.
+            // Round to the next highest ten (122 becomes 130) then subtract the sum, which gives 8.
+            checkDigit = (int)(Math.Ceiling(sum / 10.0d) * 10) - sum;
 
             // If the last digit matches the check digit the number is valid.
             return lastDigit == checkDigit;
-        }
-        private static bool _ValidateUPSCheckDigit2(string trackingNumber)
-        {
-            char[] trackingNumberArray = new char[trackingNumber.Length];
-            trackingNumberArray = trackingNumber.ToCharArray();
-            int checkDigit = 0;
-            int sum = 0;
-            for (int i = 2; i < trackingNumber.Length - 1; i++)
-            {
-                if (char.IsDigit(trackingNumberArray[i]) == false)
-                {
-                    if (Regex.IsMatch(trackingNumberArray[i].ToString(), "[A-H]"))
-                    {
-                        trackingNumberArray[i] = (char)(Convert.ToInt32(trackingNumberArray.GetValue(i)) - 15);
-                    }
-                    else if (Regex.IsMatch(trackingNumberArray[i].ToString(), "[I-R]"))
-                    {
-                        trackingNumberArray[i] = (char)(Convert.ToInt32(trackingNumberArray.GetValue(i)) - 25);
-                    }
-                    else if (Regex.IsMatch(trackingNumberArray[i].ToString(), "[S-Z]"))
-                    {
-                        trackingNumberArray[i] = (char)(Convert.ToInt32(trackingNumberArray.GetValue(i)) - 35);
-                    }
-
-                }
-                if (i % 2 == 0) // adding all odd positions
-                {
-                    sum += (Convert.ToInt32(trackingNumberArray.GetValue(i)) - 48);
-                }
-                else
-                {
-                    sum += 2 * (Convert.ToInt32(trackingNumberArray.GetValue(i)) - 48);
-                }
-
-            }
-            checkDigit = (int)(Math.Ceiling(sum / 10.0d) * 10) - sum; // round to the next highest ten (71 becomes 80)
-            if ((Convert.ToInt32(trackingNumberArray.GetValue(trackingNumber.Length - 1)) - 48) == checkDigit)
-            {
-                // check digit passes
-                return true;
-            }
-            else
-            {
-                // check digit fails
-                return false;
-            }
         }
         //01    UPS United States Next Day Air("Red")
         //02    UPS United States Second Day Air("Blue")

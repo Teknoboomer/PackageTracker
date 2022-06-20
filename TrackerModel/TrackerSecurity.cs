@@ -9,25 +9,27 @@ namespace TrackerModel
     {
         public int LogRounds { private get; set; }
 
+        /// <summary>
+        /// Hashes the supplied user name and password.
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public string GetHashedPassword(string userName, string password)
         {
-            string hashedPassword = HashPassword(password, userName);
-
-            return hashedPassword;
-        }
-
-        private string HashPassword(string clearPassword, string salt)
-        {
-            SHA256CryptoServiceProvider sha256 = new SHA256CryptoServiceProvider();
-
             int roundCount = 2 << LogRounds;
-            string saltedPassword = salt + "|" + clearPassword;
+            string saltedPassword = userName + "|" + password;
             byte[] saltedPasswordBytes = Encoding.UTF8.GetBytes(saltedPassword);
-            byte[] thisHash = sha256.ComputeHash(saltedPasswordBytes);
+            byte[] result;
+            SHA512 shaM = SHA512.Create();
+
+            result = shaM.ComputeHash(saltedPasswordBytes);
+
+            byte[] thisHash = shaM.ComputeHash(saltedPasswordBytes);
             for (int i = 0; i < roundCount; i++)
             {
                 byte[] nextBytes = thisHash.Concat(saltedPasswordBytes).ToArray();
-                thisHash = sha256.ComputeHash(nextBytes);
+                thisHash = shaM.ComputeHash(nextBytes);
             }
             return Convert.ToBase64String(thisHash);
         }

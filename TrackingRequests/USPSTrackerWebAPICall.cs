@@ -35,14 +35,15 @@ namespace ExternalTrackingequests
             string response = null;
 
             // Build the request.
-            string request = TrackerConfig.UspsTrackingFieldUrl + " &XML=<TrackFieldRequest USERID=\"" + TrackerConfig.UspsTrackingUserId +
-               "\"><Revision>1</Revision><ClientIp>122.3.3</ClientIp><SourceId>DEVELOPER</SourceId>";
-            request += "<TrackID ID = \"" + trackingRequest + "\"></TrackID>";
-            request += "</TrackFieldRequest>";
+            string request = TrackerConfig.UspsTrackingFieldUrl +
+                 $" &XML=<TrackFieldRequest USERID=\"{TrackerConfig.UspsTrackingUserId}\">" +
+                            "<Revision>1</Revision><ClientIp>122.3.3</ClientIp><SourceId>DEVELOPER</SourceId>";
+            request +=     $"<TrackID ID = \"{trackingRequest}\"></TrackID>";
+            request +=  "</TrackFieldRequest>";
 
                 try
                 {
-                    response = _httpClient.GetStringAsync(request).Result; // Uses GET
+                    response = _httpClient.GetStringAsync(request).Result; // Force synchronous call. (Uses GET)
                 }
                 catch (WebException)
                 {

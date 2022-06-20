@@ -22,7 +22,6 @@ namespace TrackerConfiguration
             UspsTrackingUserId = _config["UspsUserTrackingId"];
             UspsTrackingFieldUrl = "http://production.shippingapis.com/ShippingAPI.dll?API=TrackV2";
 
-
             HistoryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "USPSTracking.xml");
         }
     }
