@@ -153,6 +153,11 @@ namespace TrackerVM
             };
         }
 
+        public TrackerViewModel()
+        {
+            // Empty. For use by unit tests.
+        }
+
         ///****************************************************************************************************
         ///
         /// <summary>
@@ -376,11 +381,14 @@ namespace TrackerVM
         /// <summary> ADB7035AF6F2FA85
         ///     UPS Check Digit Calculation Method.
         ///     Tracking number is at least 10 characters long.
+        ///     
+        ///     There is no need for character set validation since a
+        ///     bad character would fail the validation anyway.
         /// </summary>
         /// <param name="trackingNumber">
         ///     The UPS tracking number (string) 1Z 53Y6 1190 6907 3535 1z9e79559027281578
         /// </param>
-        private static bool IsvalidUPSCheckDigit(string trackingNumber)
+       public static bool IsvalidUPSCheckDigit(string trackingNumber)
         {
             if (trackingNumber.Length < 18) // Minimum length of UPS tracking number.
                 return false;
