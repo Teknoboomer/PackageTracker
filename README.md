@@ -1,4 +1,4 @@
-1) Purpose of Project and Development Philosophy
+I) Purpose of Project and Development Philosophy
 
 This project is a demonstration of my software skills with regards to both architecture and development.
 The development was done with the same attention to detail that would apply to a production application.
@@ -19,7 +19,7 @@ I want a junior developer to be able to pick my work, understand it and make mod
 
 So, give the project a good review and determine its quality. What you see here is what you will get from me.
 
-2) Project Description
+II) Project Description
 
 I chose as a project a facility that I would find useful and would also be nontrivial. I wanted to display
 not only development skills but also user interface design capability. I am in a bookclub (PaperBackSwap.com).
@@ -41,32 +41,22 @@ clicking on an expander. The startup project is TrackerViews.
 The project is still under construction with a plan to add UPS tracking and possibly archival of past
 tracking. Code features from later versions of C# are being added as their usefulness is encountered.
 
-3) Coding style
+III) Coding style
 
 Major coding style elements of note are:
-  a) The left curly brace style is used.
-  
-  b) Braces are almost exclusively on a separate line.
-  
-  c) The keyword **var** is never used; its use is set as an error in my environment.
-  
-  d) Abstract classes are preferred over Interfaces.
-  
-  e) Interfaces are never used where a class reference works.
-  
-  f) Repetitive code is collected into methods.
-  
-  g) Names are camel case with methods names capitalized, variables lower case,
-  	globals names start with an underscore.
-	
-  h) Blank lines are used regularly for clarity.
-  
-  i) Statements will span multiple lines whenever it enhances clarity.
-  
-  j) Local variables are used to provide clarity, e.g. "trackingNumberArray[i]"
-  	will be extracted to "valueToSum" for use in a block of code.
-	
-4) Note on Cut and Pasting of Code with Example (and more philosophy)
+1) The left curly brace style is used.
+2) Braces are almost exclusively on a separate line.
+3) The keyword **var** is never used; its use is set as an error in my environment.
+4) Abstract classes are preferred over Interfaces.
+5) Interfaces are never used where a class reference works.
+6) Repetitive code is collected into methods.
+7) Names are camel case with methods names capitalized, variables lower case, globals names start with an underscore.
+8) Blank lines are used regularly for clarity.
+9) Statements will span multiple lines whenever it enhances clarity.
+10) Local variables are used to provide clarity, e.g. "trackingNumberArray[i]" will be extracted to "valueToSum" for use in a block of code.
+
+
+IV) Note on Cut and Pasting of Code with Example (and more philosophy)
 
 All code is original with the exception of the validation of the UPS tracking number. I have
 displayed the "borrowed" code and what was incorporated into the project. It serves to
