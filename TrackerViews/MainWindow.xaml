@@ -86,10 +86,10 @@
                     Margin="5,0,0,2"/>
 
             <ListView ItemContainerStyle="{StaticResource ListViewBorderedItem}" ItemsSource="{Binding MultipleTrackingHistory}"
-                        DockPanel.Dock="Bottom" Height="auto" Margin ="5,5,5,20" >
+                        DockPanel.Dock="Bottom" Height="auto" Margin ="5,5,5,20" Background="LightBlue" >
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderBrush="Black" BorderThickness="2"  Background="Ivory">
+                        <Border BorderBrush="Black" BorderThickness="2" Background="Ivory" >
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -101,19 +101,22 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0"
-                                         Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}"/>
-                                <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
+                                <!-- Tracking number and Description -->
+                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding TrackingId, Mode=OneWay}" BorderBrush="Gray" BorderThickness="0,0,2,0" FontSize="14"
+                                         Background="{Binding TrackingStatus, Converter={StaticResource TrackingStatusConverter}}" />
+                                <TextBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Description, UpdateSourceTrigger=LostFocus}" />
 
-                                <Button  Style="{DynamicResource DeleteButtonStyle}" Grid.Row="0" Grid.Column="2" VerticalAlignment="Bottom"
+                                <!-- Delete button -->
+                                <Button Style="{DynamicResource DeleteButtonStyle}" Grid.Row="0" Grid.Column="2" VerticalAlignment="Bottom"
                                     Command="{Binding Path=DataContext.DeleteHistoryCommand, RelativeSource= {RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}}"
-                                    CommandParameter ="{Binding TrackingId}" Content="X">
+                                    CommandParameter ="{Binding TrackingId}" Content="X" >
                                 </Button>
-                                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="0,2,0,0" Padding="3">
-                                    <Expander Header="{Binding StatusSummary, Mode=OneWay}"
-                                              
-                                        IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
-                                        <TextBlock TextWrapping="Wrap" Text="{Binding TrackingHistory}" />
+                                
+                                <!-- Exopander for tracking history -->
+                                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="Gray" BorderThickness="0,2,0,0" Padding="3" >
+                                    <Expander Header="{Binding StatusSummary, Mode=OneWay}" FontSize="14"
+                                        IsExpanded="{Binding IsExpanded, Mode=TwoWay}" >
+                                        <TextBox TextWrapping="Wrap" Text="{Binding TrackingHistory}" />
                                     </Expander>
                                 </Border>
                             </Grid>

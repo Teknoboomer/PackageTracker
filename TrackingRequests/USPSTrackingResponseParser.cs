@@ -188,7 +188,8 @@ namespace ExternalTrackingequests
 
                 // Set the delivery status of the package
                 history.StatusSummary = GetElementValue(trackInfo, "StatusSummary");
-                history.TrackingComplete = history.StatusSummary.Contains("was delivered") || history.StatusSummary.Contains("picked up");
+                history.TrackingComplete = history.StatusSummary.Contains("was delivered") ||
+                    (history.StatusSummary.Contains("picked up") && !history.StatusSummary.Contains("USPS picked up")); // Make sure it wasn't picked up by USPS.
                 history.TrackingStatus = history.TrackingComplete ? TrackingRequestStatus.Delivered : TrackingRequestStatus.InTransit;
             }
 

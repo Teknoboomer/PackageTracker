@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TrackerConfiguration\TrackerConfiguration.csproj" />
     <ProjectReference Include="..\TrackerModel\TrackerModels.csproj" />
   </ItemGroup>
