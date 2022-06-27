@@ -45,15 +45,24 @@ tracking. Code features from later versions of C# are being added as their usefu
 
 Major coding style elements of note are:
   a) The left curly brace style is used.
+  
   b) Braces are almost exclusively on a separate line.
+  
   c) The keyword **var** is never used; its use is set as an error in my environment.
+  
   d) Abstract classes are preferred over Interfaces.
+  
   e) Interfaces are never used where a class reference works.
+  
   f) Repetitive code is collected into methods.
+  
   g) Names are camel case with methods names capitalized, variables lower case,
   	globals names start with an underscore.
+	
   h) Blank lines are used regularly for clarity.
+  
   i) Statements will span multiple lines whenever it enhances clarity.
+  
   j) Local variables are used to provide clarity, e.g. "trackingNumberArray[i]"
   	will be extracted to "valueToSum" for use in a block of code.
 	
