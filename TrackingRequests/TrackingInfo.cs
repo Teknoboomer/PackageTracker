@@ -6,8 +6,6 @@ using TrackerConfiguration;
 using TrackerModel;
 using ExternalTrackingequests;
 using System.Globalization;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 
 namespace HistoricalTracking
@@ -17,25 +15,12 @@ namespace HistoricalTracking
         public bool HadInternalError { get; private set; }
         public string InternalErrorDescription { get; private set; }
         private string _filePath;
-        private MongoClient _dbClient;
-        private IMongoDatabase _database;
-        private IMongoCollection<TrackingInfo> _collection;
 
         // If no file path is given to the constructor, use the config file.
         public HistoricalTrackingAccess()
 
         {
             _filePath = TrackerConfig.HistoryFilePath;
-            try
-            {
-                _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
-                _database = _dbClient.GetDatabase("PackageTracker");
-                _collection = _database.GetCollection<TrackingInfo>("TrackingInfo");
-            }
-            catch (Exception e)
-            {
-                string foo = e.Message;
-            }
         }
 
         // Use the path given in the constructor for the path to save
@@ -72,31 +57,6 @@ namespace HistoricalTracking
                 info.Add(new XAttribute("Id", history.TrackingId));
                 root.Add(info);
 
-                BsonDocument newDoc = new BsonDocument
-                {
-                    { "TrackingId", history.TrackingId },
-                    { "Description", history.Description },
-                    { "Delivered", history.TrackingComplete },
-                    { "TrackingStatus", history.TrackingStatus },
-                    { "CityState", history.CityState },
-                    { "DeliveryZip", history.DeliveryZip },
-                    { "Inbound", history.Inbound },
-                    { "Summary", history.StatusSummary },
-                    { "TrackHistory", history.TrackingHistory },
-                    { "LastEventDateTime", history.LastEventDateTime },
-                    { "FirstEventDateTime", history.FirstEventDateTime }
-                };
-                try
-                {
-                    ReplaceOneResult result = _collection.ReplaceOne(
-                                    filter: new BsonDocument("TrackingId", history.TrackingId),
-                                    options: new ReplaceOptions { IsUpsert = true },
-                                    replacement: history);
-                }
-                catch (Exception e)
-                {
-                    string foo = e.Message;
-                }
             }
 
             // Save off the XML nodes to a file.
@@ -110,16 +70,6 @@ namespace HistoricalTracking
             bool hadUpdates = false;
             HadInternalError = false;
             
-            try
-            {
-                object documents = _collection.Find(new BsonDocument()).ToList();
-            }
-            catch (Exception e)
-            {
-                    string foo = e.Message;
-            }
-
-
             List<TrackingInfo> trackingHistories = new List<TrackingInfo>();
 
             // Read in all histories and uppdate the tracking for those not yet delivered.
