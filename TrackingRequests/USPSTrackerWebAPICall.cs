@@ -30,7 +30,7 @@ namespace ExternalTrackingequests
         ///     fields are utilized from the XML.
         /// </returns>
 
-        public static string GetTrackingFieldInfoAsync(string trackingRequest)
+        public static string GetTrackingFieldInfo(string trackingRequest)
         {
             string response = null;
 

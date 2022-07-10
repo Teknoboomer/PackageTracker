@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,7 +35,8 @@ namespace TDDTrackerTests
             Assert.That(hashedPassword, Is.EqualTo(security.GetHashedPassword(_userId.ToString(), _password.ToString())));
         }
 
-        [Test]
+        [
+            Test]
         public void UPSTrackingNumberGoodValidation()
         {
             string upsTrackingNumber = "1Z9e79559027281578";

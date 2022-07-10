@@ -189,8 +189,8 @@ namespace TrackerVM
                 // Make the web call to USPS to get the tracking historiy and parse it.
                 // UPS Access Code: ADB7035AF6F2FA85
                 _singleTrackingId = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))); // Get rid of any whitespace.
-                response = USPSTrackerWebAPICall.GetTrackingFieldInfoAsync(_singleTrackingId);
-                List<TrackingInfo> trackingHistories = USPSTrackingResponseParser.USPSParseTrackingXml(response, "");
+                response = USPSTrackerWebAPICall.GetTrackingFieldInfo(_singleTrackingId);
+                TrackingInfo singleTrackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", _singleTrackingDescription);
 
                 // Wait for the rest of the one second delay.
                 TimeSpan duration = DateTime.Now - start;
@@ -199,7 +199,7 @@ namespace TrackerVM
                     Thread.Sleep((int)waitTime);
 
                 // Null is returned if there is an internal error with the Internet.
-                if (trackingHistories == null)
+                if (singleTrackingHistory == null)
                 {
                     SingleTrackingSummary = "There was an external error. Check the Internet connection.";
                 }
@@ -207,7 +207,6 @@ namespace TrackerVM
                 {
                     // For single tracking, peel off the first tracking history result.
                     // Set the Single Tracking Summary and status.
-                    singleTrackingHistory = trackingHistories[0];
                     SingleTrackingSummary = singleTrackingHistory.StatusSummary;
                     SingleTrackingHistory = singleTrackingHistory.TrackingHistory;
                     status = singleTrackingHistory.TrackingStatus;
@@ -227,7 +226,6 @@ namespace TrackerVM
                     // Do not add to history if it is already there.
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
                     {
-                        singleTrackingHistory.Description = _singleTrackingDescription;
                         MultipleTrackingHistory.Insert(0, singleTrackingHistory);
                         historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
                     }

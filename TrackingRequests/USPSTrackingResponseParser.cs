@@ -25,14 +25,15 @@ namespace ExternalTrackingequests
         /// <param name="userZip">
         ///     The user's zip.
         /// </param>
+        /// <param name="userZip">
+        ///     The descrption.
+        /// </param>
         /// <returns>
-        ///     A List of TrackingInfo objects that are parsed out of the USPS response.
-        ///     Multiple tracking IDs can be contained in the response. The application
-        ///     only processes one ID at a time, but the ability to process more is provided.
+        ///     The TrackingInfo objects that is parsed out of the USPS response.
         /// </returns>
-        public static List<TrackingInfo> USPSParseTrackingXml(string responseXml, string userZip)
+        public static TrackingInfo USPSParseTrackingXml(string responseXml, string userZip, string description)
         {
-            List<TrackingInfo> trackResponseEvents = new List<TrackingInfo>();
+            TrackingInfo trackResponseEvents = new TrackingInfo();
             string errorSummary = "";
             bool hadError = true;  // Assume there was an error.
 
@@ -63,14 +64,9 @@ namespace ExternalTrackingequests
                     {
                         hadError = false;
 
-                        // Extract the tracking response for each tracking number and then extract the events for each.
-                        IEnumerable<XElement> trackIdElements = trackResponse.Elements("TrackInfo");
-                        // For each tracking Id and top off with the TrackSummary.
-                        foreach (XElement trackInfo in trackIdElements)
-                        {
-                            TrackingInfo response = USPSPopulateTrackingHistoryFromXml(trackInfo, userZip);
-                            trackResponseEvents.Add(response);
-                        }
+                        // USPS can return multiple <TrackInfo> elements, but we just use the first.
+                        XElement trackInfo = trackResponse.Elements("TrackInfo").First();
+                        trackResponseEvents = USPSPopulateTrackingHistoryFromXml(trackInfo, userZip, description);
                     }
                     else
                     {
@@ -87,12 +83,8 @@ namespace ExternalTrackingequests
             // If there was an error, set the Summary and Status.
             if (hadError)
             {
-                TrackingInfo errorHistory = new TrackingInfo
-                {
-                    StatusSummary = errorSummary,
-                    TrackingStatus = TrackingRequestStatus.InternalError
-                };
-                trackResponseEvents.Add(errorHistory);
+                trackResponseEvents.StatusSummary = errorSummary;
+                trackResponseEvents.TrackingStatus = TrackingRequestStatus.InternalError;
             }
 
             return trackResponseEvents;
@@ -110,7 +102,7 @@ namespace ExternalTrackingequests
         ///     The TrackingInfo object is a general form of the tracking information
         ///     utilized by the view model for presentation to the view.
         /// </returns>
-        private static TrackingInfo USPSPopulateTrackingHistoryFromXml(XElement trackInfo, string userZip)
+        private static TrackingInfo USPSPopulateTrackingHistoryFromXml(XElement trackInfo, string userZip, string description)
         {
             TrackingInfo history = new TrackingInfo();
 
@@ -135,6 +127,9 @@ namespace ExternalTrackingequests
 
                 // Determine if the package is inbound. If userZip is blank, value will be false.
                 history.Inbound = destinationZip == userZip;
+
+                // Fill in the description.
+                history.Description = description;
 
                 DateTime eventDateTime = DateTime.Now; // Date and time are given as two XML elements <EventTime> and <EventDate>, e.g. "11:47 am" and "August 23, 2021".
                 string eventSummary; // Summary is displayed as a space separated event date time as mm:hh + event + event city + event state

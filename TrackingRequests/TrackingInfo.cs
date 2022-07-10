@@ -6,6 +6,8 @@ using TrackerConfiguration;
 using TrackerModel;
 using ExternalTrackingequests;
 using System.Globalization;
+//using MongoDB.Bson;
+//using MongoDB.Driver;
 
 
 namespace HistoricalTracking
@@ -15,12 +17,25 @@ namespace HistoricalTracking
         public bool HadInternalError { get; private set; }
         public string InternalErrorDescription { get; private set; }
         private string _filePath;
+        //private MongoClient _dbClient;
+        //private IMongoDatabase _database;
+        //private IMongoCollection<TrackingInfo> _packagesCollection;
 
         // If no file path is given to the constructor, use the config file.
         public HistoricalTrackingAccess()
 
         {
             _filePath = TrackerConfig.HistoryFilePath;
+            //try
+            //{
+            //    _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
+            //    _database = _dbClient.GetDatabase("PackageTracker");
+            //    _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
+            //}
+            //catch (Exception e)
+            //{
+            //    string foo = e.Message;
+            //}
         }
 
         // Use the path given in the constructor for the path to save
@@ -31,6 +46,12 @@ namespace HistoricalTracking
             _filePath = path;
         }
 
+        /// <summary>
+        /// Retrieve the prior histories from storage.
+        /// </summary>
+        /// <param name="trackingHistories">
+        /// The list of histories to save.
+        /// </param>
         public void SaveHistories(List<TrackingInfo> trackingHistories)
         {
             // Create the XMLDocument along with the root element.
@@ -57,6 +78,19 @@ namespace HistoricalTracking
                 info.Add(new XAttribute("Id", history.TrackingId));
                 root.Add(info);
 
+                //try
+                //{
+                //    ReplaceOneResult result = _packagesCollection.ReplaceOne(
+                //                    filter: new BsonDocument("TrackingId", history.TrackingId),
+                //                    options: new ReplaceOptions { IsUpsert = true },
+                //                    replacement: history);
+                //}
+                //catch (Exception e)
+                //{
+                //    string foo = e.Message;
+                //    // https://drive.google.com/file/d/1ZYGuyUqV0bZJMSPr6Q8uHCQIKk563BQ-/view?usp=sharing
+                //    // https://drive.google.com/file/d/1S41rPRgH8NvBUWL9kRvgo2QCNMMtavDR/view?usp=sharing
+                //}
             }
 
             // Save off the XML nodes to a file.
@@ -65,11 +99,27 @@ namespace HistoricalTracking
             return;
         }
 
+        /// <summary>
+        /// Retrieves prior histories from storage.
+        /// </summary>
+        /// <returns>
+        /// A List of TrackingInfo that is the list of saved histories in storage.
+        /// </returns>
         public List<TrackingInfo> GetSavedHistories()
         {
             bool hadUpdates = false;
             HadInternalError = false;
             
+            //try
+            //{
+            //    FilterDefinition<TrackingInfo> filter = Builders<TrackingInfo>.Filter.Ne(x => x.TrackingId, "");
+            //    List<TrackingInfo> packages = _packagesCollection.Find(filter).ToList();
+            //}
+            //catch (Exception e)
+            //{
+            //        string foo = e.Message;
+            //}
+
             List<TrackingInfo> trackingHistories = new List<TrackingInfo>();
 
             // Read in all histories and uppdate the tracking for those not yet delivered.
@@ -94,7 +144,7 @@ namespace HistoricalTracking
                 // Do not update outdated undelivered tracking requests. USPS IDs for valid for only 120 days.
                 if (!history.TrackingComplete && history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
                 {
-                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfoAsync(history.TrackingId);
+                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfo(history.TrackingId);
                     if (response.StartsWith("Error"))
                     {
                         HadInternalError = true;
@@ -102,9 +152,7 @@ namespace HistoricalTracking
                     }
                     else
                     {
-                        // The parser can return multiple tracking request, but only the first is used.
-                        List<TrackingInfo> requestedUpdates = USPSTrackingResponseParser.USPSParseTrackingXml(response, "");
-                        TrackingInfo update = requestedUpdates[0];
+                        TrackingInfo update = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", history.Description);
                         if (update.TrackingStatus == TrackingRequestStatus.InternalError)
                         {
                             HadInternalError = true;

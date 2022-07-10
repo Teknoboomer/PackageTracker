@@ -26,6 +26,7 @@ namespace TrackerModel
     /// </summary>
     public class TrackingInfo
     {
+        public Object Id { get; set; }
         public string TrackingId { get; set; }
         public string PostOfficeClass { get; set; }
         public bool Inbound { get; set; }
