@@ -12,6 +12,14 @@ namespace ExternalTrackingequests
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
         static readonly HttpClient _httpClient = new HttpClient();
+        static readonly string _myIP;
+
+        static USPSTrackerWebAPICall()
+        {
+            string hostName = Dns.GetHostName(); // Retrive the Name of HOST
+            // Get the IP
+            _myIP = Dns.GetHostEntry(hostName).AddressList[0].ToString();
+        }
 
         /// <summary>
         ///     Uses the tracking id to build the XML request to the USPS.

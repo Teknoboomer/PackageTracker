@@ -41,7 +41,7 @@ namespace ExternalTrackingequests
             {
                 // Parse the tracking events for this tracking id. If there is no error, get the list of tracking events.
                 XDocument xmlDoc = XDocument.Parse(responseXml);
-                XElement trackResponse = xmlDoc.Element("TrackResponse");
+                XElement root = xmlDoc.Element("TrackResponse");
 
                 // An error can be returned from USPS if there is a glitch in the request. Not likely, but can happoen.
                 // Report as an internal error for the Status Summary.
@@ -52,12 +52,18 @@ namespace ExternalTrackingequests
                 // Check for a resonse that does not have a <TrackResponse> node. This can happen if there
                 // is a response from other than USPS. This turned up during testing when ATT&T's network had a node malfunction
                 // and gave an error response that would show up in a webpage for user diagnostics.
-                else if (trackResponse == null)
+                else if (root == null)
                 {
                     errorSummary = "There was an external error. Check the Internet connection.";
                 }
+                else if(root.Element("Error") != null)
+                {
+                    errorSummary = root.Element("Error").Value;
+                }
                 else
                 {
+                    XElement trackResponse = root.Element("TrackInfo");
+
                     // An error can be returned by USPS if it finds something it does not like in the request, again not likely but can happen.
                     XElement error = trackResponse.Element("Error");
                     if (trackResponse.Element("Error") == null)
@@ -65,7 +71,7 @@ namespace ExternalTrackingequests
                         hadError = false;
 
                         // USPS can return multiple <TrackInfo> elements, but we just use the first.
-                        XElement trackInfo = trackResponse.Elements("TrackInfo").First();
+                        XElement trackInfo = root.Elements("TrackInfo").First();
                         trackResponseEvents = USPSPopulateTrackingHistoryFromXml(trackInfo, userZip, description);
                     }
                     else

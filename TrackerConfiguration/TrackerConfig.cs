@@ -24,6 +24,16 @@ namespace TrackerConfiguration
 
             HistoryFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "USPSTracking.xml");
         }
+
+        /// <summary>
+        /// A hack to allow insertion of the USPS field URL for the unit tests.
+        /// To removed later when I figure out, if possible, how to access the config file from the unit tests.
+        /// </summary>
+        public static void SetUSPSTrakinUserIdl()
+        {
+            UspsTrackingUserId = "818DEVEL4717";
+            return;
+        }
     }
 }
 

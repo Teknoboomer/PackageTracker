@@ -10,6 +10,7 @@ using HistoricalTracking;
 using TrackerModel;
 using NUnit;
 using NUnit.Framework;
+using TrackerConfiguration;
 
 namespace TDDTrackerTests
 {
@@ -18,13 +19,26 @@ namespace TDDTrackerTests
         [SetUp]
         public void Setup()
         {
+            TrackerConfig.SetUSPSTrakinUserIdl();
+        }
+
+        [Test] // Assumes Internet is attached.
+        public void RoundTripFromUSPSValidReturn()
+        {
+            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("4444444444444444444444");
+            Assert.That(response != null);
+
+            TrackingInfo info = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", "");
+            Assert.That(info.TrackingStatus == TrackingRequestStatus.InternalError);
+
+            Assert.That(info.StatusSummary == "-2147219301Delivery status information is not available for your item via this web site. ");
         }
 
         [Test]
         public void ActiveUSPSWebServiceCall()
         {
             string knownResponse = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Error><Number>80040B19</Number><Description>XML Syntax Error: Please check the XML request to see if it can be parsed.(B)</Description><Source>USPSCOM::DoAuth</Source></Error>";
-            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("EJ123456780US");
+            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("EJ123\"456780US");
 
             Assert.That(knownResponse, Is.EqualTo(response));
         }

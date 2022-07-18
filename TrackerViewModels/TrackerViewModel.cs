@@ -190,7 +190,7 @@ namespace TrackerVM
                 // UPS Access Code: ADB7035AF6F2FA85
                 _singleTrackingId = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))); // Get rid of any whitespace.
                 response = USPSTrackerWebAPICall.GetTrackingFieldInfo(_singleTrackingId);
-                TrackingInfo singleTrackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", _singleTrackingDescription);
+                singleTrackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", _singleTrackingDescription);
 
                 // Wait for the rest of the one second delay.
                 TimeSpan duration = DateTime.Now - start;
@@ -202,6 +202,7 @@ namespace TrackerVM
                 if (singleTrackingHistory == null)
                 {
                     SingleTrackingSummary = "There was an external error. Check the Internet connection.";
+                    status = TrackingRequestStatus.InternalError;
                 }
                 else
                 {

@@ -101,6 +101,11 @@
                     "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
                     }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.DesktopRuntime.6.0.x86"
+                    {
+                    "Name" = "8:.NET Desktop Runtime 6.0.6 (x86)"
+                    "ProductCode" = "8:Microsoft.NetCore.DesktopRuntime.6.0.x86"
+                    }
                 }
             }
         }
@@ -774,7 +779,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_3E898B8F22FE4A86B67B37060ABE2A4F"
             {
-            "SourcePath" = "8:..\\TrackerViews\\obj\\Debug\\net6.0-windows10.0.22000.0\\TrackerViews.dll"
+            "SourcePath" = "8:..\\TrackerViews\\obj\\Release\\net5.0-windows\\TrackerViews.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_0517AB6AAE17421081285DB99D370A2E"
@@ -858,7 +863,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BAA0C8E59A0E46BBBA3D04869F5B21C4"
             {
-            "SourcePath" = "8:..\\TrackerViews\\obj\\Debug\\net6.0-windows10.0.22000.0\\apphost.exe"
+            "SourcePath" = "8:..\\TrackerViews\\obj\\Release\\net5.0-windows\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_0517AB6AAE17421081285DB99D370A2E"
@@ -942,7 +947,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_E7780D06C7F44CD88E1E05D0F9A72184"
             {
-            "SourcePath" = "8:..\\DialogServices\\obj\\Debug\\net6.0-windows10.0.22000.0\\DialogServices.dll"
+            "SourcePath" = "8:..\\DialogServices\\obj\\Release\\net5.0-windows\\DialogServices.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_0517AB6AAE17421081285DB99D370A2E"

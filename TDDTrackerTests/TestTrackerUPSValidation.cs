@@ -31,7 +31,7 @@ namespace TDDTrackerTests
             security.LogRounds = 11;
             string hashedPassword = security.GetHashedPassword(_userId.ToString(), _password.ToString());
 
-            // Make sure the hash comes out the same twice in a row.
+            // Make sure the hash comes out the same twice in a row. JW88V-NCV62-9YQX3-FVRDG-4M7GW
             Assert.That(hashedPassword, Is.EqualTo(security.GetHashedPassword(_userId.ToString(), _password.ToString())));
         }
 
