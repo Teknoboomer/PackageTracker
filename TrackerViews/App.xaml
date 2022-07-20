@@ -16,7 +16,20 @@
         <Style BasedOn="{StaticResource {x:Type TextBlock}}"
            TargetType="TextBlock"
            x:Key="MainTitleText">
-            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontSize" Value="30"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontFamily" Value="Cambria"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Foreground" Value="DarkBlue"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!--Style for section subtitles-->
+        <Style BasedOn="{StaticResource {x:Type TextBlock}}"
+           TargetType="TextBlock"
+           x:Key="SubTitleText">
+            <Setter Property="FontSize" Value="25"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontFamily" Value="Cambria"/>
             <Setter Property="Margin" Value="5"/>
@@ -29,28 +42,15 @@
         <Style BasedOn="{StaticResource {x:Type TextBlock}}"
            TargetType="TextBlock"
            x:Key="TitleText">
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontFamily" Value="Cambria"/>
-            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Margin" Value="3"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
 
-        <!--Style for section subtitles-->
-        <Style BasedOn="{StaticResource {x:Type TextBlock}}"
-           TargetType="TextBlock"
-           x:Key="SubTitleText">
-            <Setter Property="FontSize" Value="30"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontFamily" Value="Cambria"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Foreground" Value="DarkBlue"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-        </Style>
-
-        <!--Gradient background for tracking note and number TextBox headers-->
+        <!--Gradient background for tracking description and number TextBox headers-->
         <Style x:Key="ShadedPanelBorder" TargetType="{x:Type Border}">
             <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="BorderBrush" Value="Black"/>
@@ -96,10 +96,10 @@
         <Style x:Key="SingleTrackerDataTextBox" TargetType="{x:Type TextBox}">
             <Setter Property="BorderBrush" Value="DarkGray"/>
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="Margin" Value="6"/>
+            <Setter Property="Margin" Value="2"/>
             <Setter Property="Height" Value="auto"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="18"/>
         </Style>
 
         <!--ListView for collection of tracked items.-->

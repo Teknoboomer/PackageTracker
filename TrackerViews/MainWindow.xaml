@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="true"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
         xmlns:local="clr-namespace:PackageTrackerWPF"
         mc:Ignorable="d"
         WindowState="Maximized"
@@ -19,14 +18,14 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Height="Auto" Width="1220" Margin="10,10,10,10" Orientation="Vertical" >
+        <StackPanel Grid.Row="0" Height="Auto" Width="1220" Margin="0,0,0,0" Orientation="Vertical" >
             <!-- Main Title -->
-            <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,20,0,20" ></TextBlock>
+            <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,10,0,10" ></TextBlock>
 
             <!-- Block for Single Tracking Number Entry and presentation of Status Summary -->
             <Grid Background="LightBlue" Width="auto">
                 <StackPanel Orientation="Vertical" >
-                    <TextBlock Style="{DynamicResource SubTitleText}" Text = "Tracking" Margin = "0,10,0,10" ></TextBlock>
+                    <TextBlock Style="{DynamicResource SubTitleText}" Text = "Tracking" Margin = "0,5,0,10" ></TextBlock>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
 
                         <!-- Single tracker Description -->
@@ -86,7 +85,7 @@
                     Margin="5,0,0,2"/>
 
             <ListView ItemContainerStyle="{StaticResource ListViewBorderedItem}" ItemsSource="{Binding MultipleTrackingHistory}"
-                        DockPanel.Dock="Bottom" Height="auto" Margin ="5,5,5,20" Background="LightBlue" >
+                        DockPanel.Dock="Bottom" Height="auto" Margin ="5,2,5,20" Background="LightBlue" >
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="Black" BorderThickness="2" Background="Ivory" >
