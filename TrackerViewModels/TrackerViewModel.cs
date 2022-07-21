@@ -186,6 +186,9 @@ namespace TrackerVM
                 DateTime start = DateTime.Now;
                 SingleTrackingSummary = "";
 
+                // Turn off saving of history when descrption is updated to avoid premature saving of history.
+                TrackingInfoChangedNotifier.DescriptionUpdated = null;
+
                 // Make the web call to USPS to get the tracking historiy and parse it.
                 // UPS Access Code: ADB7035AF6F2FA85
                 _singleTrackingId = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))); // Get rid of any whitespace.
@@ -228,7 +231,7 @@ namespace TrackerVM
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
                     {
                         MultipleTrackingHistory.Insert(0, singleTrackingHistory);
-                        historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
+                        historicalTracking.SaveHistory(singleTrackingHistory);
                     }
 
                     // Clear the Description and Tracking ID.
@@ -236,6 +239,10 @@ namespace TrackerVM
                     SingleTrackingId = "";
                 }
             }
+
+            // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
+            // by the view.
+            TrackingInfoChangedNotifier.DescriptionUpdated = DesciprionUpdated;
         }
 
         ///
@@ -307,7 +314,7 @@ namespace TrackerVM
                 // each time a history is loaded if the Delegate was not null.
                 TrackingInfoChangedNotifier.DescriptionUpdated = null;
 
-                // Retrieve past tracking histories while pdating nondelivered tracking and parse them.
+                // Retrieve past tracking histories while updating nondelivered tracking and parse them.
                 // WebApi calls will only be made to update nondelivered items.
                 // Convert the List to an ObservableCollection for display.
                 List<TrackingInfo> trackingList = historicalTracking.GetSavedHistories();
@@ -326,11 +333,13 @@ namespace TrackerVM
 
                 // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
                 // by the view.
-                TrackingInfoChangedNotifier.DescriptionUpdated = (tackingInfo) =>
-                {
-                    historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
-                };
+                TrackingInfoChangedNotifier.DescriptionUpdated = DesciprionUpdated;
             });
+        }
+
+        public void DesciprionUpdated(TrackingInfo history)
+        {
+            historicalTracking.SaveHistory(history);
         }
 
         ///
@@ -373,7 +382,7 @@ namespace TrackerVM
                 string trackingId = (string)dialogParameters.ActionParams;
 
                 _multipleTrackingHistory.Remove(_multipleTrackingHistory.Where(history => history.TrackingId == trackingId).FirstOrDefault());
-                historicalTracking.SaveHistories(new List<TrackingInfo>(_multipleTrackingHistory));
+                historicalTracking.DeleteHistory(trackingId);
             }
         }
 
