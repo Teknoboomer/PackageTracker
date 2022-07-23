@@ -16,10 +16,21 @@ namespace TDDTrackerTests
 {
     public class Tests
     {
+        HistoricalTrackingAccess _historicalTracking;
+
         [SetUp]
         public void Setup()
         {
-            TrackerConfig.SetUSPSTrakinUserIdl();
+            if (_historicalTracking == null)
+            {
+                TrackerConfig.SetUSPSTrakinUserIdl();
+
+                // Create/Open test DB.
+                _historicalTracking = new HistoricalTrackingAccess("TestUSPSTracking");
+
+                // Clear out any leftover tracking histories.
+                List<TrackingInfo> _trackingInfos = _historicalTracking.GetSavedHistories();
+            }
         }
 
         [Test] // Assumes Internet is attached.
@@ -539,18 +550,17 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
-            HistoricalTrackingAccess historicalTracking = new HistoricalTrackingAccess(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestUSPSTracking.xml"));
             List<TrackingInfo> histories = new List<TrackingInfo>();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459", "");
             histories.Add(history);
+            _historicalTracking.SaveHistory(history); // Save history to storage.
             history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459", "");
             histories.Add(history);
+            _historicalTracking.SaveHistory(history); // Save history to storage.
             Assert.That(histories.Count, Is.EqualTo(2)); // Should be two TrackingInfos.
 
-            // Save the histories and read them back in. Then compare the two.
-            historicalTracking.SaveHistories(histories);
-
-            List<TrackingInfo> savedHistories = historicalTracking.GetSavedHistories();
+            // Read the histories back in. Then compare the two.
+            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
             Assert.That(savedHistories.Count, Is.EqualTo(2)); // Should still be two TrackingInfos.
 
             for (int i = 0; i < savedHistories.Count; i++)
@@ -563,6 +573,7 @@ namespace TDDTrackerTests
                 Assert.That(savedHistory.TrackingStatus, Is.EqualTo(history.TrackingStatus));
             }
         }
+
         [Test]
         public void SaveDetectLost()
         {
@@ -688,19 +699,29 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
-            HistoricalTrackingAccess historicalTracking = new HistoricalTrackingAccess(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestUSPSTracking.xml"));
+            ClearDB(); // Clear out the DB;
+
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
-            Assert.That(history != null); // Should be two TrackingInfos.
+            Assert.That(history != null); // Should have gotten something back.
 
-            // Save the histories and read them back in. Then compare the two.
-            List<TrackingInfo> trackingInfos = new List<TrackingInfo>();
-            trackingInfos.Add(history);
-            historicalTracking.SaveHistories(trackingInfos);
+            // Save the history and read it back in. Then compare the two.
+            _historicalTracking.SaveHistory(history);
 
-            List<TrackingInfo> savedHistories = historicalTracking.GetSavedHistories();
+            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
             Assert.That(savedHistories != null); // Should still be two TrackingInfos.
 
             Assert.That(savedHistories[0].TrackingStatus, Is.EqualTo(TrackingRequestStatus.Lost)); // TrackingStatus should be lost.
+        }
+
+        private void ClearDB()
+        {
+            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
+            foreach (TrackingInfo history in savedHistories)
+            {
+                _historicalTracking.DeleteHistory(history.TrackingId);
+
+            }
+
         }
     }
 }

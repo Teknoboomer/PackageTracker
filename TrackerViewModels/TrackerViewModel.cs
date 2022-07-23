@@ -20,8 +20,52 @@ namespace TrackerVM
         private int TRACKING_NUMBER_LENGTH = 22;
         private readonly string DELETE_TRACKING_NUMBER = "Tracking number xxx";
 
-        private HistoricalTrackingAccess historicalTracking = new HistoricalTrackingAccess();
+        private HistoricalTrackingAccess _historicalTracking = new HistoricalTrackingAccess();
+        private string _internalErrorDescription;
         private IDialogService _dialogService;
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Main View Model constructor. It attaches to the dialog service for the popups. The Delegate
+        ///     Commands for the various Buttons are also set up. Finally, some items in the View are
+        ///     initialized.
+        /// </summary>
+        /// <param name="dialogService">
+        ///     The DialogService is connected in the Unity Container.
+        /// </param>
+        ///
+        ///****************************************************************************************************
+        internal TrackerViewModel(IDialogService dialogService)
+        {
+            _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
+
+            // Set up the Command Delegates for the various buttons.
+            TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
+            DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
+            PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
+
+            // Clear the Description, Tracking Id and set the Refresh button to indicate active.
+            RefreshEnabled = true;
+            SingleTrackingDescription = "";
+            SingleTrackingId = "";
+
+            // Collapse the tracking status for the single tracking since we don't have one
+            // Get the past histories asynchronously and display them.
+            SingleTrackingSummaryVisibility = Visibility.Collapsed;
+            _ = TrackPastHistories();
+
+            // Action to close all other expanded expanders in Tracking History list when one is expanded.
+            // The Action is invoked in TrackingInfo when the IsExpanded binding is actived and Enabled.
+            TrackingInfoChangedNotifier.ExpanderUpdated = (tackingInfo) =>
+            {
+                for (int i = 0; i < MultipleTrackingHistory.Count; i++)
+                {
+                    if (MultipleTrackingHistory[i].IsExpanded && MultipleTrackingHistory[i].TrackingId != tackingInfo.TrackingId)
+                        MultipleTrackingHistory[i] = new TrackingInfo(MultipleTrackingHistory[i]);
+                }
+            };
+        }
 
         ///****************************************************************************************************
         ///
@@ -110,49 +154,6 @@ namespace TrackerVM
         // Delegate command to delete a previous tracking Id.
         public DelegateCommand<object> DeleteHistoryCommand { get; private set; }
 
-        ///****************************************************************************************************
-        ///
-        /// <summary>
-        ///     Main View Model constructor. It attaches to the dialog service for the popups. The Delegate
-        ///     Commands for the various Buttons are also set up. Finally, some items in the View are
-        ///     initialized.
-        /// </summary>
-        /// <param name="dialogService">
-        ///     The DialogService is connected in the Unity Container.
-        /// </param>
-        ///
-        ///****************************************************************************************************
-        internal TrackerViewModel(IDialogService dialogService)
-        {
-            _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
-
-            // Set up the Command Delegates for the various buttons.
-            TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
-            DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
-            PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
-
-            // Clear the Description, Tracking Id and set the Refresh button to indicate active.
-            RefreshEnabled = true;
-            SingleTrackingDescription = "";
-            SingleTrackingId = "";
-
-            // Collapse the tracking status for the single tracking since we don't have one
-            // Get the past histories asynchronously and display them.
-            SingleTrackingSummaryVisibility = Visibility.Collapsed;
-            _ = TrackPastHistories();
-
-            // Action to close all other expanded expanders in Tracking History list when one is expanded.
-            // The Action is invoked in TrackingInfo when the IsExpanded binding is actived and Enabled.
-            TrackingInfoChangedNotifier.ExpanderUpdated = (tackingInfo) =>
-            {
-                for (int i = 0; i < MultipleTrackingHistory.Count; i++)
-                {
-                    if (MultipleTrackingHistory[i].IsExpanded && MultipleTrackingHistory[i].TrackingId != tackingInfo.TrackingId)
-                        MultipleTrackingHistory[i] = new TrackingInfo(MultipleTrackingHistory[i]);
-                }
-            };
-        }
-
         public TrackerViewModel()
         {
             // Empty. For use by unit tests.
@@ -231,7 +232,7 @@ namespace TrackerVM
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
                     {
                         MultipleTrackingHistory.Insert(0, singleTrackingHistory);
-                        historicalTracking.SaveHistory(singleTrackingHistory);
+                        _historicalTracking.SaveHistory(singleTrackingHistory);
                     }
 
                     // Clear the Description and Tracking ID.
@@ -260,6 +261,15 @@ namespace TrackerVM
             bool isValidTrackingNUmber = (nonSpace.StartsWith("1Z") && IsvalidUPSCheckDigit(nonSpace))
                 || (nonSpace.Length == TRACKING_NUMBER_LENGTH && nonSpace.All(char.IsNumber));
             return isValidTrackingNUmber;
+        }
+
+        /// <summary>
+        /// Delegate for Description updated.
+        /// </summary>
+        /// <param name="history"></param>
+        public void DesciprionUpdated(TrackingInfo history)
+        {
+            _historicalTracking.SaveHistory(history);
         }
 
         ///****************************************************************************************************
@@ -317,29 +327,31 @@ namespace TrackerVM
                 // Retrieve past tracking histories while updating nondelivered tracking and parse them.
                 // WebApi calls will only be made to update nondelivered items.
                 // Convert the List to an ObservableCollection for display.
-                List<TrackingInfo> trackingList = historicalTracking.GetSavedHistories();
-                MultipleTrackingHistory = new ObservableCollection<TrackingInfo>(trackingList);
+                List<TrackingInfo> trackingList = _historicalTracking.GetSavedHistories();
+                trackingList.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
+
+                // Update nondelivered tracking and parse them.
+                // WebApi calls will only be made to update nondelivered items.
+                bool hadInternalError = UpdateUndeliveredTracking(trackingList);
 
                 // If there was a problem with the Internet, put an error message in the single tracking summary and make it visible.
                 // A problem will show up if any of the in-transit IDs attempt to update and fail.
-                if (historicalTracking.HadInternalError)
+                if (hadInternalError)
                 {
                     // Update the Single Tracking Summary and make it visible.
                     SingleTrackingSummaryVisibility = Visibility.Visible;
-                    SingleTrackingSummary = historicalTracking.InternalErrorDescription;
-                    SingleTrackingHistory = historicalTracking.InternalErrorDescription;
+                    SingleTrackingSummary = _internalErrorDescription;
+                    SingleTrackingHistory = _internalErrorDescription;
                     TrackSinglePackageStatusColor = TrackingRequestStatus.InternalError;
                 }
+
+                // Convert the List to an ObservableCollection for display and update display.
+                MultipleTrackingHistory = new ObservableCollection<TrackingInfo>(trackingList);
 
                 // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
                 // by the view.
                 TrackingInfoChangedNotifier.DescriptionUpdated = DesciprionUpdated;
             });
-        }
-
-        public void DesciprionUpdated(TrackingInfo history)
-        {
-            historicalTracking.SaveHistory(history);
         }
 
         ///
@@ -382,8 +394,68 @@ namespace TrackerVM
                 string trackingId = (string)dialogParameters.ActionParams;
 
                 _multipleTrackingHistory.Remove(_multipleTrackingHistory.Where(history => history.TrackingId == trackingId).FirstOrDefault());
-                historicalTracking.DeleteHistory(trackingId);
+                _historicalTracking.DeleteHistory(trackingId);
             }
+        }
+
+        /// <summary>
+        ///      Updates the tracking history of all undelivered packages.
+        /// </summary>
+        /// <param name="trackingHistories"></param>
+        ///      The List of tracking histories.
+        /// <returns name="hadInternalError">
+        ///      Indicates an internal error from the updates.
+        /// </returns>
+        private bool UpdateUndeliveredTracking(List<TrackingInfo>trackingHistories)
+        {
+            bool hadInternalError = false;
+
+            // Loop through all of the histories and update the tracking for those not yet
+            // delivered before adding them into the list.
+            for (int i = 0; i < trackingHistories.Count; i++)
+            {
+                TrackingInfo history = trackingHistories[i];
+
+                // Do not update outdated undelivered tracking requests. USPS IDs for valid for only 120 days.
+                if (!history.TrackingComplete && history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
+                {
+                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfo(history.TrackingId);
+                    if (response.StartsWith("Error"))
+                    {
+                        hadInternalError = true;
+                        _internalErrorDescription = response;
+                    }
+                    else
+                    {
+                        TrackingInfo update = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", history.Description);
+                        if (update.TrackingStatus == TrackingRequestStatus.InternalError)
+                        {
+                            hadInternalError = true;
+                            _internalErrorDescription = update.StatusSummary;
+                        }
+                        else
+                        {
+                            update.Description = history.Description; // Restore the Description.
+                            update.Id = history.Id; // Restore the Id.
+                            trackingHistories[i] = update;  // Update the history.
+                            _historicalTracking.SaveHistory(trackingHistories[i]);
+                        }
+                    }
+                }
+                else
+                {
+                    // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
+                    if (!history.TrackingComplete && history.FirstEventDateTime < DateTime.Now.AddDays(-120))
+                    {
+                        history.TrackingComplete = true;
+                        history.TrackingStatus = TrackingRequestStatus.Lost;
+                        trackingHistories[i] = history;  // Update the history.
+                        _historicalTracking.SaveHistory(trackingHistories[i]);
+                    }
+                }
+            }
+
+            return hadInternalError;
         }
 
         /// <summary> ADB7035AF6F2FA85
@@ -396,7 +468,7 @@ namespace TrackerVM
         /// <param name="trackingNumber">
         ///     The UPS tracking number (string) 1Z 53Y6 1190 6907 3535 1z9e79559027281578
         /// </param>
-       public static bool IsvalidUPSCheckDigit(string trackingNumber)
+        public static bool IsvalidUPSCheckDigit(string trackingNumber)
         {
             if (trackingNumber.Length < 18) // Minimum length of UPS tracking number.
                 return false;
