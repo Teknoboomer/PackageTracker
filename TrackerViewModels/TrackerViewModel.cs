@@ -20,16 +20,30 @@ namespace TrackerVM
         private int TRACKING_NUMBER_LENGTH = 22;
         private readonly string DELETE_TRACKING_NUMBER = "Tracking number xxx";
 
-        private HistoricalTrackingAccess _historicalTracking = new HistoricalTrackingAccess();
         private string _internalErrorDescription;
         private IDialogService _dialogService;
 
         ///****************************************************************************************************
         ///
         /// <summary>
-        ///     Main View Model constructor. It attaches to the dialog service for the popups. The Delegate
-        ///     Commands for the various Buttons are also set up. Finally, some items in the View are
-        ///     initialized.
+        ///     Testing View Model constructor. Initializes the HistoricalTrackingAccess to the test DB.
+        ///     Finally, some items in the View are initialized.
+        /// </summary>
+        /// <param name="historicalTrackingAccess">
+        ///     The HistoricalTrackingAccess attached to test DB.
+        /// </param>
+        ///
+        ///****************************************************************************************************
+        public TrackerViewModel(string dbName)
+        {
+            HistoricalTrackingAccess.InitializeDB(dbName);
+        }
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Main View Model constructor. It attaches to the dialog service for the popups and initializes
+        ///     the instance of the HistoricalTrackingAccess class.
         /// </summary>
         /// <param name="dialogService">
         ///     The DialogService is connected in the Unity Container.
@@ -40,7 +54,7 @@ namespace TrackerVM
         {
             _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
 
-            // Set up the Command Delegates for the various buttons.
+            HistoricalTrackingAccess.InitializeDB("PackageTracker");
             TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
             DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
             PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
@@ -53,7 +67,7 @@ namespace TrackerVM
             // Collapse the tracking status for the single tracking since we don't have one
             // Get the past histories asynchronously and display them.
             SingleTrackingSummaryVisibility = Visibility.Collapsed;
-            _ = TrackPastHistories();
+            Task.Run(TrackPastHistories);
 
             // Action to close all other expanded expanders in Tracking History list when one is expanded.
             // The Action is invoked in TrackingInfo when the IsExpanded binding is actived and Enabled.
@@ -232,7 +246,7 @@ namespace TrackerVM
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
                     {
                         MultipleTrackingHistory.Insert(0, singleTrackingHistory);
-                        _historicalTracking.SaveHistory(singleTrackingHistory);
+                        HistoricalTrackingAccess.SaveHistory(singleTrackingHistory);
                     }
 
                     // Clear the Description and Tracking ID.
@@ -269,7 +283,7 @@ namespace TrackerVM
         /// <param name="history"></param>
         public void DesciprionUpdated(TrackingInfo history)
         {
-            _historicalTracking.SaveHistory(history);
+            HistoricalTrackingAccess.SaveHistory(history);
         }
 
         ///****************************************************************************************************
@@ -295,6 +309,7 @@ namespace TrackerVM
             {
                 DateTime start = DateTime.Now;
                 _ = TrackPastHistories();
+
                 // Wait for the rest of the one second delay.
                 TimeSpan duration = DateTime.Now - start;
                 int waitTime = 1000 - (int)duration.TotalMilliseconds;
@@ -319,15 +334,15 @@ namespace TrackerVM
             await Task.Run(() =>
             {
                 // Delegate will be null until history loaded to turn off
-                // saving of the histories. All tracking history is saved
+                // saving of the histories. Tracking history is saved
                 // whenever the Description is updated, which would happen
-                // each time a history is loaded if the Delegate was not null.
+                // each time a history is loaded if the Delegate were not null.
                 TrackingInfoChangedNotifier.DescriptionUpdated = null;
 
                 // Retrieve past tracking histories while updating nondelivered tracking and parse them.
                 // WebApi calls will only be made to update nondelivered items.
                 // Convert the List to an ObservableCollection for display.
-                List<TrackingInfo> trackingList = _historicalTracking.GetSavedHistories();
+                List<TrackingInfo> trackingList = HistoricalTrackingAccess.GetSavedHistories();
                 trackingList.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
 
                 // Update nondelivered tracking and parse them.
@@ -394,7 +409,7 @@ namespace TrackerVM
                 string trackingId = (string)dialogParameters.ActionParams;
 
                 _multipleTrackingHistory.Remove(_multipleTrackingHistory.Where(history => history.TrackingId == trackingId).FirstOrDefault());
-                _historicalTracking.DeleteHistory(trackingId);
+                HistoricalTrackingAccess.DeleteHistory(trackingId);
             }
         }
 
@@ -406,9 +421,15 @@ namespace TrackerVM
         /// <returns name="hadInternalError">
         ///      Indicates an internal error from the updates.
         /// </returns>
-        private bool UpdateUndeliveredTracking(List<TrackingInfo>trackingHistories)
+        public bool UpdateUndeliveredTracking(List<TrackingInfo> trackingHistories)
         {
             bool hadInternalError = false;
+
+            // Delegate will be null until history loaded to turn off
+            // saving of the histories. Tracking history is saved
+            // whenever the Description is updated, which would happen
+            // each time a history is updated if the Delegate were not null.
+            TrackingInfoChangedNotifier.DescriptionUpdated = null;
 
             // Loop through all of the histories and update the tracking for those not yet
             // delivered before adding them into the list.
@@ -438,7 +459,7 @@ namespace TrackerVM
                             update.Description = history.Description; // Restore the Description.
                             update.Id = history.Id; // Restore the Id.
                             trackingHistories[i] = update;  // Update the history.
-                            _historicalTracking.SaveHistory(trackingHistories[i]);
+                            HistoricalTrackingAccess.SaveHistory(trackingHistories[i]);
                         }
                     }
                 }
@@ -447,15 +468,26 @@ namespace TrackerVM
                     // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
                     if (!history.TrackingComplete && history.FirstEventDateTime < DateTime.Now.AddDays(-120))
                     {
+                        List<TrackingInfo> trackingList = HistoricalTrackingAccess.GetSavedHistories();
+
                         history.TrackingComplete = true;
                         history.TrackingStatus = TrackingRequestStatus.Lost;
                         trackingHistories[i] = history;  // Update the history.
-                        _historicalTracking.SaveHistory(trackingHistories[i]);
+                        HistoricalTrackingAccess.SaveHistory(trackingHistories[i]);
                     }
                 }
             }
 
+            // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
+            // by the view.
+            TrackingInfoChangedNotifier.DescriptionUpdated = DesciprionUpdated;
+
             return hadInternalError;
+        }
+
+        public void DisableDescriptionUpdateDelegate()
+        {
+            TrackingInfoChangedNotifier.DescriptionUpdated = null;
         }
 
         /// <summary> ADB7035AF6F2FA85

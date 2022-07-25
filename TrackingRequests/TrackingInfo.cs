@@ -12,34 +12,18 @@ using MongoDB.Driver;
 
 namespace HistoricalTracking
 {
-    public class HistoricalTrackingAccess
+    public static class HistoricalTrackingAccess
     {
-        private MongoClient _dbClient;
-        private IMongoDatabase _database;
-        private IMongoCollection<TrackingInfo> _packagesCollection;
+        private static MongoClient _dbClient;
+        private static IMongoDatabase _database;
+        private static IMongoCollection<TrackingInfo> _packagesCollection;
 
-        public HistoricalTrackingAccess()
+        public static void InitializeDB(string dbName)
         {
             try
             {
                 _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
-                _database = _dbClient.GetDatabase("PackageTracker");
-                _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
-            }
-            catch (Exception e)
-            {
-                string foo = e.Message;
-            }
-        }
-
-        // Use testMongoDB to create/access the test database.
-        // This is included for the automated tests.
-        public HistoricalTrackingAccess(string testMongoDB)
-        {
-            try
-            {
-                _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
-                _database = _dbClient.GetDatabase(testMongoDB);
+                _database = _dbClient.GetDatabase(dbName);
                 _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
             }
             catch (Exception e)
@@ -54,7 +38,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to save.
         /// </param>
-        public void SaveHistory(TrackingInfo history)
+        public static void SaveHistory(TrackingInfo history)
         {
             // Loop through the histories, creating a <TrackingInfo> node for each.
             try
@@ -80,7 +64,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to delete.
         /// </param>
-        public void DeleteHistory(string trackingId)
+        public static void DeleteHistory(string trackingId)
         {
             // Loop through the histories, creating a <TrackingInfo> node for each.
             try
@@ -102,7 +86,7 @@ namespace HistoricalTracking
         /// <returns>
         ///      A List of TrackingInfo that is the list of saved histories in storage.
         /// </returns>
-        public List<TrackingInfo> GetSavedHistories()
+        public static List<TrackingInfo> GetSavedHistories()
         {
             List<TrackingInfo> trackingHistories = new List<TrackingInfo>();
             try

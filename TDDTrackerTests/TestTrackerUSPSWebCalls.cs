@@ -11,25 +11,29 @@ using TrackerModel;
 using NUnit;
 using NUnit.Framework;
 using TrackerConfiguration;
+using TrackerVM;
 
 namespace TDDTrackerTests
 {
     public class Tests
     {
-        HistoricalTrackingAccess _historicalTracking;
+        private bool _dbIsInitialized = false;
+        TrackerViewModel _vm;
 
         [SetUp]
         public void Setup()
         {
-            if (_historicalTracking == null)
+            if (!_dbIsInitialized)
             {
+                _vm = new TrackerViewModel("TestUSPSTracking");
+
                 TrackerConfig.SetUSPSTrakinUserIdl();
 
                 // Create/Open test DB.
-                _historicalTracking = new HistoricalTrackingAccess("TestUSPSTracking");
+                HistoricalTrackingAccess.InitializeDB("TestUSPSTracking");
 
                 // Clear out any leftover tracking histories.
-                List<TrackingInfo> _trackingInfos = _historicalTracking.GetSavedHistories();
+                List<TrackingInfo> _trackingInfos = HistoricalTrackingAccess.GetSavedHistories();
             }
         }
 
@@ -42,7 +46,9 @@ namespace TDDTrackerTests
             TrackingInfo info = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", "");
             Assert.That(info.TrackingStatus == TrackingRequestStatus.InternalError);
 
-            Assert.That(info.StatusSummary == "-2147219301Delivery status information is not available for your item via this web site. ");
+            // For an invalid tracking number you can get one of two responses. I have no idea why there are two.
+            Assert.That(info.StatusSummary == "-2147219301Delivery status information is not available for your item via this web site. " ||
+                info.StatusSummary == "-2147219302The tracking number may be incorrect or the status update is not yet available. Please verify your tracking number and try again later.");
         }
 
         [Test]
@@ -298,7 +304,7 @@ namespace TDDTrackerTests
             Assert.That(trackingInfo.Description, Is.EqualTo("A Descrption"));
 
             // Make sure we picked out latest DateTime from the TrackDetail nodes.
-            DateTime latest = new DateTime(2021, 10, 3, 7, 54, 0);
+            DateTime latest = new DateTime(2021, 10, 3, 7, 54, 0).ToUniversalTime();
             Assert.That(latest, Is.EqualTo(trackingInfo.LastEventDateTime));
         }
 
@@ -430,7 +436,7 @@ namespace TDDTrackerTests
             string goodResponse2 =
             "<TrackResponse> " + "\n" +
 
-                "<TrackInfo ID = \"9374889671006176791375\">" + "\n" +
+                "<TrackInfo ID = \"9374889671006176791376\">" + "\n" +
                     "<Class>Parcel Select Lightweight</Class>" + "\n" +
                     "<ClassOfMailCode>LW</ClassOfMailCode>" + "\n" +
                     "<DestinationCity>MISSOURI CITY</DestinationCity>" + "\n" +
@@ -550,25 +556,33 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
+            ClearDB(); // Reset the test DB.
+            _vm.DisableDescriptionUpdateDelegate();
+
             List<TrackingInfo> histories = new List<TrackingInfo>();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459", "");
             histories.Add(history);
-            _historicalTracking.SaveHistory(history); // Save history to storage.
+            HistoricalTrackingAccess.SaveHistory(history); // Save history to storage.
+
             history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459", "");
             histories.Add(history);
-            _historicalTracking.SaveHistory(history); // Save history to storage.
+            HistoricalTrackingAccess.SaveHistory(history); // Save history to storage.
             Assert.That(histories.Count, Is.EqualTo(2)); // Should be two TrackingInfos.
 
             // Read the histories back in. Then compare the two.
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
             Assert.That(savedHistories.Count, Is.EqualTo(2)); // Should still be two TrackingInfos.
+
+            // Make sure both lists are in same order.
+            histories.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
+            savedHistories.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
 
             for (int i = 0; i < savedHistories.Count; i++)
             {
                 TrackingInfo savedHistory = savedHistories[i];
                 history = histories[i];
 
-                Assert.That(savedHistory.FirstEventDateTime, Is.EqualTo(history.LastEventDateTime));
+                Assert.That(savedHistory.FirstEventDateTime, Is.EqualTo(history.FirstEventDateTime));
                 Assert.That(savedHistory.LastEventDateTime, Is.EqualTo(history.LastEventDateTime));
                 Assert.That(savedHistory.TrackingStatus, Is.EqualTo(history.TrackingStatus));
             }
@@ -701,13 +715,19 @@ namespace TDDTrackerTests
 
             ClearDB(); // Clear out the DB;
 
+
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
             Assert.That(history != null); // Should have gotten something back.
 
-            // Save the history and read it back in. Then compare the two.
-            _historicalTracking.SaveHistory(history);
+            List<TrackingInfo> trackings = new List<TrackingInfo>();
+            trackings.Add(history); // Should set Lost status and save history.
+            _vm.DisableDescriptionUpdateDelegate();
+            _vm.UpdateUndeliveredTracking(trackings);
 
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
+            // Read the history back in. Then compare the two.
+            _vm.DisableDescriptionUpdateDelegate();
+            savedHistories = HistoricalTrackingAccess.GetSavedHistories();
             Assert.That(savedHistories != null); // Should still be two TrackingInfos.
 
             Assert.That(savedHistories[0].TrackingStatus, Is.EqualTo(TrackingRequestStatus.Lost)); // TrackingStatus should be lost.
@@ -715,10 +735,14 @@ namespace TDDTrackerTests
 
         private void ClearDB()
         {
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
+            if (savedHistories.Count > 5)
+            {
+                int foo = savedHistories.Count;
+            }    
             foreach (TrackingInfo history in savedHistories)
             {
-                _historicalTracking.DeleteHistory(history.TrackingId);
+                HistoricalTrackingAccess.DeleteHistory(history.TrackingId);
 
             }
 
