@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -56,7 +55,7 @@ namespace ExternalTrackingequests
                 {
                     errorSummary = "There was an external error. Check the Internet connection.";
                 }
-                else if(root.Element("Error") != null)
+                else if (root.Element("Error") != null)
                 {
                     errorSummary = root.Element("Error").Value;
                 }
@@ -95,8 +94,6 @@ namespace ExternalTrackingequests
 
             return trackResponseEvents;
         }
-
-        // 
 
         /// <summary>
         ///     Method to extract tracking history from the XElement for an individual tracking id

@@ -1,18 +1,14 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
-using TrackerConfiguration;
 using TrackerModel;
-using ExternalTrackingequests;
-using System.Globalization;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 
 namespace HistoricalTracking
 {
-    public static class HistoricalTrackingAccess
+    public static class HistoricalTrackingAccessMongoDB
     {
         private static MongoClient _dbClient;
         private static IMongoDatabase _database;
@@ -28,7 +24,7 @@ namespace HistoricalTracking
             }
             catch (Exception e)
             {
-                string foo = e.Message;
+                throw new Exception("InitializeDB: " + e.Message);
             }
         }
 

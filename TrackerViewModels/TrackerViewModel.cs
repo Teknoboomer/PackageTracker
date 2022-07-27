@@ -1,3 +1,5 @@
+using ExternalTrackingequests;
+using HistoricalTracking;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
@@ -9,9 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TrackerModel;
-using HistoricalTracking;
-using ExternalTrackingequests;
-using System.Text.RegularExpressions;
 
 namespace TrackerVM
 {
@@ -26,24 +25,24 @@ namespace TrackerVM
         ///****************************************************************************************************
         ///
         /// <summary>
-        ///     Testing View Model constructor. Initializes the HistoricalTrackingAccess to the test DB.
+        ///     Testing View Model constructor. Initializes the HistoricalTrackingAccessMongoDB to the test DB.
         ///     Finally, some items in the View are initialized.
         /// </summary>
-        /// <param name="historicalTrackingAccess">
-        ///     The HistoricalTrackingAccess attached to test DB.
+        /// <param name="dbName">
+        ///     The database name attached to test DB.
         /// </param>
         ///
         ///****************************************************************************************************
         public TrackerViewModel(string dbName)
         {
-            HistoricalTrackingAccess.InitializeDB(dbName);
+            HistoricalTrackingAccessMongoDB.InitializeDB(dbName);
         }
 
         ///****************************************************************************************************
         ///
         /// <summary>
         ///     Main View Model constructor. It attaches to the dialog service for the popups and initializes
-        ///     the instance of the HistoricalTrackingAccess class.
+        ///     the instance of the HistoricalTrackingAccessMongoDB class.
         /// </summary>
         /// <param name="dialogService">
         ///     The DialogService is connected in the Unity Container.
@@ -54,7 +53,7 @@ namespace TrackerVM
         {
             _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
 
-            HistoricalTrackingAccess.InitializeDB("PackageTracker");
+            HistoricalTrackingAccessMongoDB.InitializeDB("PackageTracker");
             TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
             DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
             PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
@@ -246,7 +245,7 @@ namespace TrackerVM
                     if (_multipleTrackingHistory.Where(history => history.TrackingId == _singleTrackingId).Count() == 0)
                     {
                         MultipleTrackingHistory.Insert(0, singleTrackingHistory);
-                        HistoricalTrackingAccess.SaveHistory(singleTrackingHistory);
+                        HistoricalTrackingAccessMongoDB.SaveHistory(singleTrackingHistory);
                     }
 
                     // Clear the Description and Tracking ID.
@@ -283,7 +282,7 @@ namespace TrackerVM
         /// <param name="history"></param>
         public void DesciprionUpdated(TrackingInfo history)
         {
-            HistoricalTrackingAccess.SaveHistory(history);
+            HistoricalTrackingAccessMongoDB.SaveHistory(history);
         }
 
         ///****************************************************************************************************
@@ -342,7 +341,7 @@ namespace TrackerVM
                 // Retrieve past tracking histories while updating nondelivered tracking and parse them.
                 // WebApi calls will only be made to update nondelivered items.
                 // Convert the List to an ObservableCollection for display.
-                List<TrackingInfo> trackingList = HistoricalTrackingAccess.GetSavedHistories();
+                List<TrackingInfo> trackingList = HistoricalTrackingAccessMongoDB.GetSavedHistories();
                 trackingList.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
 
                 // Update nondelivered tracking and parse them.
@@ -409,7 +408,7 @@ namespace TrackerVM
                 string trackingId = (string)dialogParameters.ActionParams;
 
                 _multipleTrackingHistory.Remove(_multipleTrackingHistory.Where(history => history.TrackingId == trackingId).FirstOrDefault());
-                HistoricalTrackingAccess.DeleteHistory(trackingId);
+                HistoricalTrackingAccessMongoDB.DeleteHistory(trackingId);
             }
         }
 
@@ -459,7 +458,7 @@ namespace TrackerVM
                             update.Description = history.Description; // Restore the Description.
                             update.Id = history.Id; // Restore the Id.
                             trackingHistories[i] = update;  // Update the history.
-                            HistoricalTrackingAccess.SaveHistory(trackingHistories[i]);
+                            HistoricalTrackingAccessMongoDB.SaveHistory(trackingHistories[i]);
                         }
                     }
                 }
@@ -468,12 +467,12 @@ namespace TrackerVM
                     // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
                     if (!history.TrackingComplete && history.FirstEventDateTime < DateTime.Now.AddDays(-120))
                     {
-                        List<TrackingInfo> trackingList = HistoricalTrackingAccess.GetSavedHistories();
+                        List<TrackingInfo> trackingList = HistoricalTrackingAccessMongoDB.GetSavedHistories();
 
                         history.TrackingComplete = true;
                         history.TrackingStatus = TrackingRequestStatus.Lost;
                         trackingHistories[i] = history;  // Update the history.
-                        HistoricalTrackingAccess.SaveHistory(trackingHistories[i]);
+                        HistoricalTrackingAccessMongoDB.SaveHistory(trackingHistories[i]);
                     }
                 }
             }
@@ -559,4 +558,3 @@ namespace TrackerVM
         //AA    UPS United States Next Day Air Early A.M. - Saturday Delivery, Adult Signature Required, COD
     }
 }
- 

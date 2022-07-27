@@ -1,16 +1,10 @@
- using System;
- using System.Collections.Generic;
- using System.IO;
- using System.Linq;
- using System.Net.Http;
- using System.Threading;
- using System.Threading.Tasks;
 using ExternalTrackingequests;
 using HistoricalTracking;
-using TrackerModel;
-using NUnit;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 using TrackerConfiguration;
+using TrackerModel;
 using TrackerVM;
 
 namespace TDDTrackerTests
@@ -30,10 +24,10 @@ namespace TDDTrackerTests
                 TrackerConfig.SetUSPSTrakinUserIdl();
 
                 // Create/Open test DB.
-                HistoricalTrackingAccess.InitializeDB("TestUSPSTracking");
+                HistoricalTrackingAccessMongoDB.InitializeDB("TestUSPSTracking");
 
                 // Clear out any leftover tracking histories.
-                List<TrackingInfo> _trackingInfos = HistoricalTrackingAccess.GetSavedHistories();
+                List<TrackingInfo> _trackingInfos = HistoricalTrackingAccessMongoDB.GetSavedHistories();
             }
         }
 
@@ -562,15 +556,15 @@ namespace TDDTrackerTests
             List<TrackingInfo> histories = new List<TrackingInfo>();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459", "");
             histories.Add(history);
-            HistoricalTrackingAccess.SaveHistory(history); // Save history to storage.
+            HistoricalTrackingAccessMongoDB.SaveHistory(history); // Save history to storage.
 
             history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459", "");
             histories.Add(history);
-            HistoricalTrackingAccess.SaveHistory(history); // Save history to storage.
+            HistoricalTrackingAccessMongoDB.SaveHistory(history); // Save history to storage.
             Assert.That(histories.Count, Is.EqualTo(2)); // Should be two TrackingInfos.
 
             // Read the histories back in. Then compare the two.
-            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccessMongoDB.GetSavedHistories();
             Assert.That(savedHistories.Count, Is.EqualTo(2)); // Should still be two TrackingInfos.
 
             // Make sure both lists are in same order.
@@ -716,7 +710,7 @@ namespace TDDTrackerTests
             ClearDB(); // Clear out the DB;
 
 
-            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccessMongoDB.GetSavedHistories();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
             Assert.That(history != null); // Should have gotten something back.
 
@@ -727,7 +721,7 @@ namespace TDDTrackerTests
 
             // Read the history back in. Then compare the two.
             _vm.DisableDescriptionUpdateDelegate();
-            savedHistories = HistoricalTrackingAccess.GetSavedHistories();
+            savedHistories = HistoricalTrackingAccessMongoDB.GetSavedHistories();
             Assert.That(savedHistories != null); // Should still be two TrackingInfos.
 
             Assert.That(savedHistories[0].TrackingStatus, Is.EqualTo(TrackingRequestStatus.Lost)); // TrackingStatus should be lost.
@@ -735,14 +729,14 @@ namespace TDDTrackerTests
 
         private void ClearDB()
         {
-            List<TrackingInfo> savedHistories = HistoricalTrackingAccess.GetSavedHistories();
+            List<TrackingInfo> savedHistories = HistoricalTrackingAccessMongoDB.GetSavedHistories();
             if (savedHistories.Count > 5)
             {
                 int foo = savedHistories.Count;
-            }    
+            }
             foreach (TrackingInfo history in savedHistories)
             {
-                HistoricalTrackingAccess.DeleteHistory(history.TrackingId);
+                HistoricalTrackingAccessMongoDB.DeleteHistory(history.TrackingId);
 
             }
 

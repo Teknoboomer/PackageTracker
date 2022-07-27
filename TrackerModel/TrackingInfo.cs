@@ -56,6 +56,7 @@ namespace TrackerModel
                 TrackingInfoChangedNotifier.DescriptionUpdated?.Invoke(this);
             }
         }
+
         private bool _isExpanded = false;
         public bool IsExpanded
         {
@@ -70,14 +71,13 @@ namespace TrackerModel
                 // Collapse any other expanded items.
                 if (value)
                     TrackingInfoChangedNotifier.ExpanderUpdated?.Invoke(this);
-
             }
         }
 
         public TrackingInfo()
         {
-            LastEventDateTime = DateTime.Now; // Defaullt to DateTime.Now in case there are not yet any events.
-            FirstEventDateTime = DateTime.Now; // Defaullt to DateTime.Now in case there are not yet any events.
+            LastEventDateTime = DateTime.Now; // Default to DateTime.Now in case there are not yet any events.
+            FirstEventDateTime = DateTime.Now; // Default to DateTime.Now in case there are not yet any events.
             CityState = "";
             DeliveryZip = "";
             TrackingId = "";
@@ -98,7 +98,7 @@ namespace TrackerModel
             LastEventDateTime = info.LastEventDateTime;
             FirstEventDateTime = info.FirstEventDateTime;
             CityState = info.CityState;
-            DeliveryZip = info.DeliveryZip; ;
+            DeliveryZip = info.DeliveryZip;
             TrackingId = info.TrackingId;
             Description = info.Description;
             TrackingStatus = info.TrackingStatus;
