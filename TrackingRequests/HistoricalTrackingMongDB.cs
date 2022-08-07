@@ -39,7 +39,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to save.
         /// </param>
-        public void SaveHistory(TrackingInfo history)
+        public static void SaveHistory(TrackingInfo history)
         {
             // Save the history to storage.
             try
@@ -65,7 +65,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to delete.
         /// </param>
-        public void DeleteHistory(string trackingId)
+        public static void DeleteHistory(string trackingId)
         {
             // Loop through the histories, creating a <TrackingInfo> node for each.
             try
@@ -87,7 +87,7 @@ namespace HistoricalTracking
         /// <returns>
         ///      A List of TrackingInfo that is the list of saved histories in storage.
         /// </returns>
-        public List<TrackingInfo> GetSavedHistories()
+        public static List<TrackingInfo> GetSavedHistories()
         {
             List<TrackingInfo> trackingHistories = new List<TrackingInfo>();
             try

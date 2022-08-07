@@ -45,6 +45,22 @@ namespace TrackerVM
         ///     Main View Model constructor. It attaches to the dialog service for the popups and initializes
         ///     the instance of the HistoricalTrackingAccessMongoDB class.
         /// </summary>
+        /// <param name="dbName">
+        ///     The database name attached to test DB.
+        /// </param>
+        ///
+        ///****************************************************************************************************
+        public TrackerViewModel(string dbName)
+        {
+            HistoricalTrackingAccessMongoDB.InitializeDB(dbName);
+        }
+
+        ///****************************************************************************************************
+        ///
+        /// <summary>
+        ///     Main View Model constructor. It attaches to the dialog service for the popups and initializes
+        ///     the instance of the HistoricalTrackingAccessMongoDB class.
+        /// </summary>
         /// <param name="dialogService">
         ///     The DialogService is connected in the Unity Container.
         /// </param>
