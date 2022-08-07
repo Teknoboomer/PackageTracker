@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using TrackerConfiguration;
 
 namespace ExternalTrackingequests
@@ -46,17 +45,17 @@ namespace ExternalTrackingequests
             string request = TrackerConfig.UspsTrackingFieldUrl +
                  $" &XML=<TrackFieldRequest USERID=\"{TrackerConfig.UspsTrackingUserId}\">" +
                             "<Revision>1</Revision><ClientIp>122.3.3</ClientIp><SourceId>DEVELOPER</SourceId>";
-            request +=     $"<TrackID ID = \"{trackingRequest}\"></TrackID>";
-            request +=  "</TrackFieldRequest>";
+            request += $"<TrackID ID = \"{trackingRequest}\"></TrackID>";
+            request += "</TrackFieldRequest>";
 
-                try
-                {
-                    response = _httpClient.GetStringAsync(request).Result; // Force synchronous call. (Uses GET)
-                }
-                catch (WebException)
-                {
-                    response = "Error: There was a problem reaching the USPS website. Check the Internet connection.";
-                }
+            try
+            {
+                response = _httpClient.GetStringAsync(request).Result; // Force synchronous call. (Uses GET)
+            }
+            catch (WebException)
+            {
+                response = "Error: There was a problem reaching the USPS website. Check the Internet connection.";
+            }
 
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             return response;

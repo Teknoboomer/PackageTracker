@@ -27,9 +27,9 @@ namespace TrackerConfiguration
 
         /// <summary>
         /// A hack to allow insertion of the USPS field URL for the unit tests.
-        /// To removed later when I figure out, if possible, how to access the config file from the unit tests.
+        /// To be removed later when I figure out, if possible, how to access the config file from the unit tests.
         /// </summary>
-        public static void SetUSPSTrakinUserIdl()
+        public static void SetUSPSTrackinUserIdl()
         {
             UspsTrackingUserId = "818DEVEL4717";
             return;

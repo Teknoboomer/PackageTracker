@@ -1,50 +1,35 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
-using TrackerConfiguration;
 using TrackerModel;
-using ExternalTrackingequests;
-using System.Globalization;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 
 namespace HistoricalTracking
 {
-    public class HistoricalTrackingAccess
+    public class HistoricalTrackingAccessMongoDB
     {
         private MongoClient _dbClient;
         private IMongoDatabase _database;
         private IMongoCollection<TrackingInfo> _packagesCollection;
+        private IMongoCollection<TrackingInfo> _packagesCollectionCloud;
 
-        public HistoricalTrackingAccess()
+        public HistoricalTrackingAccessMongoDB(string dbName)
         {
             try
             {
-                _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
-                _database = _dbClient.GetDatabase("PackageTracker");
+                //_dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
+                //_database = _dbClient.GetDatabase(dbName);
+                //_packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
+                MongoClientSettings settings = MongoClientSettings.FromConnectionString("mongodb://Runeweaver:Fourcats4@ac-oqlurky-shard-00-00.ufwkgz2.mongodb.net:27017,ac-oqlurky-shard-00-01.ufwkgz2.mongodb.net:27017,ac-oqlurky-shard-00-02.ufwkgz2.mongodb.net:27017/?ssl=true&replicaSet=atlas-133h6i-shard-0&authSource=admin&retryWrites=true&w=majority");
+                _dbClient = new MongoClient(settings);
+                _database = _dbClient.GetDatabase(dbName);
                 _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
             }
             catch (Exception e)
             {
-                string foo = e.Message;
-            }
-        }
-
-        // Use testMongoDB to create/access the test database.
-        // This is included for the automated tests.
-        public HistoricalTrackingAccess(string testMongoDB)
-        {
-            try
-            {
-                _dbClient = new MongoClient("mongodb://localhost:27017?socketTimeoutMS=19000");
-                _database = _dbClient.GetDatabase(testMongoDB);
-                _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
-            }
-            catch (Exception e)
-            {
-                string foo = e.Message;
+                throw new Exception("InitializeDB: " + e.Message);
             }
         }
 
@@ -56,7 +41,7 @@ namespace HistoricalTracking
         /// </param>
         public void SaveHistory(TrackingInfo history)
         {
-            // Loop through the histories, creating a <TrackingInfo> node for each.
+            // Save the history to storage.
             try
             {
                 if (history.Id == null)

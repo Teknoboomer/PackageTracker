@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -56,7 +55,7 @@ namespace ExternalTrackingequests
                 {
                     errorSummary = "There was an external error. Check the Internet connection.";
                 }
-                else if(root.Element("Error") != null)
+                else if (root.Element("Error") != null)
                 {
                     errorSummary = root.Element("Error").Value;
                 }
@@ -95,8 +94,6 @@ namespace ExternalTrackingequests
 
             return trackResponseEvents;
         }
-
-        // 
 
         /// <summary>
         ///     Method to extract tracking history from the XElement for an individual tracking id
@@ -144,7 +141,7 @@ namespace ExternalTrackingequests
                 XElement trackSummary = trackInfo.Element("TrackSummary");
                 if (trackSummary != null)
                 {
-                    // For some responses, there will be no event for the <TrackSummary>. Use DateTime.Now as the default.
+                    // For some responses, there will be no event for the <TrackSummary>, so evnetDateTime has been defaulted to DateTime.Now.
                     if (trackSummary.Element("EventDate") != null)
                         eventDateTime = DateTime.Parse(trackSummary.Element("EventDate").Value + " " + trackSummary.Element("EventTime").Value);
 
@@ -167,8 +164,8 @@ namespace ExternalTrackingequests
                     if (trackEvents[i].Element("EventDate") != null && trackEvents[i].Element("EventTime") != null)
                     {
                         eventDateTime = DateTime.Parse(trackEvents[i].Element("EventDate").Value + " " + trackEvents[i].Element("EventTime").Value);
-                        if (history.LastEventDateTime < eventDateTime)
-                            history.LastEventDateTime = eventDateTime;
+                        if (history.LastEventDateTime < eventDateTime.ToUniversalTime())
+                            history.LastEventDateTime = eventDateTime.ToUniversalTime();
                     }
                     eventSummary = eventDateTime.ToString("g", CultureInfo.CreateSpecificCulture("en-US")) + " ";
                     eventSummary += GetElementValue(trackEvents[i], "Event") + " ";
@@ -178,18 +175,19 @@ namespace ExternalTrackingequests
 
                 // Give LastEventDateTime a value if it has not been updated.
                 if (history.LastEventDateTime == DateTime.MinValue)
-                    history.LastEventDateTime = DateTime.Now;
+                    history.LastEventDateTime = DateTime.UtcNow;
 
                 // Get the first event DateTime
                 // If there are no tracking events, the ID has not yet entered the USPS system. Use the tracking summary DateTime.
                 if (trackEvents.Length == 0)
-                    history.FirstEventDateTime = eventDateTime;
+                    history.FirstEventDateTime = eventDateTime.ToUniversalTime();
                 else
-                    history.FirstEventDateTime = DateTime.Parse(trackEvents[0].Element("EventDate").Value + " " + trackEvents[0].Element("EventTime").Value);
+                    history.FirstEventDateTime = DateTime.Parse(trackEvents[trackEvents.Length - 1].Element("EventDate").Value + " " +
+                        trackEvents[trackEvents.Length - 1].Element("EventTime").Value).ToUniversalTime();
 
                 // Set the delivery status of the package
                 history.StatusSummary = GetElementValue(trackInfo, "StatusSummary");
-                history.TrackingComplete = history.StatusSummary.Contains("was delivered") ||
+                history.TrackingComplete = history.StatusSummary.Contains("was delivered") || history.StatusSummary.Contains("has been delivered") ||
                     (history.StatusSummary.Contains("picked up") && !history.StatusSummary.Contains("USPS picked up")); // Make sure it wasn't picked up by USPS.
                 history.TrackingStatus = history.TrackingComplete ? TrackingRequestStatus.Delivered : TrackingRequestStatus.InTransit;
             }

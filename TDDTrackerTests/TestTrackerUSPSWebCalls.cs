@@ -1,35 +1,27 @@
- using System;
- using System.Collections.Generic;
- using System.IO;
- using System.Linq;
- using System.Net.Http;
- using System.Threading;
- using System.Threading.Tasks;
 using ExternalTrackingequests;
 using HistoricalTracking;
-using TrackerModel;
-using NUnit;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 using TrackerConfiguration;
+using TrackerModel;
+using TrackerVM;
 
 namespace TDDTrackerTests
 {
     public class Tests
     {
-        HistoricalTrackingAccess _historicalTracking;
+        private bool _configIsInitialized = false;
+        private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking");
+        private readonly HistoricalTrackingAccessMongoDB _db = new HistoricalTrackingAccessMongoDB("TestUSPSTracking");
 
         [SetUp]
         public void Setup()
         {
-            if (_historicalTracking == null)
+            if (!_configIsInitialized)
             {
-                TrackerConfig.SetUSPSTrakinUserIdl();
-
-                // Create/Open test DB.
-                _historicalTracking = new HistoricalTrackingAccess("TestUSPSTracking");
-
-                // Clear out any leftover tracking histories.
-                List<TrackingInfo> _trackingInfos = _historicalTracking.GetSavedHistories();
+                TrackerConfig.SetUSPSTrackinUserIdl();
+                _configIsInitialized = true;
             }
         }
 
@@ -37,12 +29,20 @@ namespace TDDTrackerTests
         public void RoundTripFromUSPSValidReturn()
         {
             string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("4444444444444444444444");
-            Assert.That(response != null);
+            Assert.That(response, Is.Not.EqualTo(null));
 
             TrackingInfo info = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", "");
-            Assert.That(info.TrackingStatus == TrackingRequestStatus.InternalError);
+            if (info != null)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(info.TrackingStatus == TrackingRequestStatus.InternalError);
 
-            Assert.That(info.StatusSummary == "-2147219301Delivery status information is not available for your item via this web site. ");
+                    // For an invalid tracking number you can get one of two responses. I have no idea why there are two.
+                    Assert.That(info.StatusSummary == "-2147219301Delivery status information is not available for your item via this web site. " ||
+                        info.StatusSummary == "-2147219302The tracking number may be incorrect or the status update is not yet available. Please verify your tracking number and try again later.");
+                });
+            }
         }
 
         [Test]
@@ -77,8 +77,11 @@ namespace TDDTrackerTests
 
             TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(trackingErrorResponse, "77459", "");
             Assert.That(trackingHistory != null);
-            Assert.That(trackingHistory.TrackingStatus, Is.EqualTo(TrackingRequestStatus.InternalError));
-            Assert.That(trackingHistory.StatusSummary, Is.EqualTo("\nAn error occurred\n"));
+            if (trackingHistory != null)
+            {
+                Assert.That(trackingHistory.TrackingStatus, Is.EqualTo(TrackingRequestStatus.InternalError));
+                Assert.That(trackingHistory.StatusSummary, Is.EqualTo("\nAn error occurred\n"));
+            }
         }
 
         [Test]
@@ -159,10 +162,13 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(firstResponse, "77459", "");
-            Assert.That(trackingHistory != null);
+            Assert.That(trackingHistory, Is.Not.EqualTo(null));
 
-            TrackingInfo trackingInfo = trackingHistory;
-            Assert.That(trackingInfo.TrackingStatus, Is.EqualTo(TrackingRequestStatus.InTransit));
+            if (trackingHistory != null)
+            {
+                TrackingInfo trackingInfo = trackingHistory;
+                Assert.That(trackingInfo.TrackingStatus, Is.EqualTo(TrackingRequestStatus.InTransit));
+            }
         }
 
         [Test]
@@ -291,14 +297,16 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             TrackingInfo trackingInfo = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "A Descrption");
-            Assert.That(trackingInfo != null);
-
-            Assert.That(trackingInfo.TrackingStatus, Is.EqualTo(TrackingRequestStatus.Delivered));
-            Assert.That(trackingInfo.TrackingId, Is.EqualTo("9374889671006176791375"));
-            Assert.That(trackingInfo.Description, Is.EqualTo("A Descrption"));
+            Assert.That(trackingInfo, Is.Not.EqualTo(null));
+            Assert.Multiple(() =>
+            {
+                Assert.That(trackingInfo.TrackingStatus, Is.EqualTo(TrackingRequestStatus.Delivered));
+                Assert.That(trackingInfo.TrackingId, Is.EqualTo("9374889671006176791375"));
+                Assert.That(trackingInfo.Description, Is.EqualTo("A Descrption"));
+            });
 
             // Make sure we picked out latest DateTime from the TrackDetail nodes.
-            DateTime latest = new DateTime(2021, 10, 3, 7, 54, 0);
+            DateTime latest = new DateTime(2021, 10, 3, 7, 54, 0).ToUniversalTime();
             Assert.That(latest, Is.EqualTo(trackingInfo.LastEventDateTime));
         }
 
@@ -430,7 +438,7 @@ namespace TDDTrackerTests
             string goodResponse2 =
             "<TrackResponse> " + "\n" +
 
-                "<TrackInfo ID = \"9374889671006176791375\">" + "\n" +
+                "<TrackInfo ID = \"9374889671006176791376\">" + "\n" +
                     "<Class>Parcel Select Lightweight</Class>" + "\n" +
                     "<ClassOfMailCode>LW</ClassOfMailCode>" + "\n" +
                     "<DestinationCity>MISSOURI CITY</DestinationCity>" + "\n" +
@@ -550,25 +558,33 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
+            ClearDB(); // Reset the test DB.
+            _vm.DisableDescriptionUpdateDelegate();
+
             List<TrackingInfo> histories = new List<TrackingInfo>();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459", "");
             histories.Add(history);
-            _historicalTracking.SaveHistory(history); // Save history to storage.
+            _db.SaveHistory(history); // Save history to storage.
+
             history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459", "");
             histories.Add(history);
-            _historicalTracking.SaveHistory(history); // Save history to storage.
+            _db.SaveHistory(history); // Save history to storage.
             Assert.That(histories.Count, Is.EqualTo(2)); // Should be two TrackingInfos.
 
             // Read the histories back in. Then compare the two.
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
+            List<TrackingInfo> savedHistories = _db.GetSavedHistories();
             Assert.That(savedHistories.Count, Is.EqualTo(2)); // Should still be two TrackingInfos.
+
+            // Make sure both lists are in same order.
+            histories.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
+            savedHistories.Sort((x, y) => -x.FirstEventDateTime.CompareTo(y.FirstEventDateTime)); // Latest on top.
 
             for (int i = 0; i < savedHistories.Count; i++)
             {
                 TrackingInfo savedHistory = savedHistories[i];
                 history = histories[i];
 
-                Assert.That(savedHistory.FirstEventDateTime, Is.EqualTo(history.LastEventDateTime));
+                Assert.That(savedHistory.FirstEventDateTime, Is.EqualTo(history.FirstEventDateTime));
                 Assert.That(savedHistory.LastEventDateTime, Is.EqualTo(history.LastEventDateTime));
                 Assert.That(savedHistory.TrackingStatus, Is.EqualTo(history.TrackingStatus));
             }
@@ -701,27 +717,37 @@ namespace TDDTrackerTests
 
             ClearDB(); // Clear out the DB;
 
+            List<TrackingInfo> savedHistories = _db.GetSavedHistories();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
-            Assert.That(history != null); // Should have gotten something back.
+            Assert.That(history, Is.Not.EqualTo(null)); // Should have gotten something back.
 
-            // Save the history and read it back in. Then compare the two.
-            _historicalTracking.SaveHistory(history);
+            List<TrackingInfo> trackings = new List<TrackingInfo>();
+            trackings.Add(history); // Should set Lost status and save history.
+            _vm.DisableDescriptionUpdateDelegate();
+            _vm.UpdateUndeliveredTracking(trackings);
 
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
-            Assert.That(savedHistories != null); // Should still be two TrackingInfos.
+            // Read the history back in. Then compare the two.
+            _vm.DisableDescriptionUpdateDelegate();
+            savedHistories = _db.GetSavedHistories();
+            Assert.That(savedHistories, Is.Not.EqualTo(null)); // Should be there.
 
             Assert.That(savedHistories[0].TrackingStatus, Is.EqualTo(TrackingRequestStatus.Lost)); // TrackingStatus should be lost.
         }
 
         private void ClearDB()
         {
-            List<TrackingInfo> savedHistories = _historicalTracking.GetSavedHistories();
-            foreach (TrackingInfo history in savedHistories)
+            List<TrackingInfo> savedHistories = _db.GetSavedHistories();
+            if (savedHistories.Count < 5) // Make sure we are not hitting production.
             {
-                _historicalTracking.DeleteHistory(history.TrackingId);
-
+                foreach (TrackingInfo history in savedHistories)
+                {
+                    _db.DeleteHistory(history.TrackingId);
+                }
             }
-
+            else
+            {
+                throw new Exception("Hitting prodution!!!!");
+            }
         }
     }
 }
