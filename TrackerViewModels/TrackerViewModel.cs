@@ -27,7 +27,6 @@ namespace TrackerVM
         ///
         /// <summary>
         ///     Testing View Model constructor. Initializes the HistoricalTrackingAccessMongoDB to the test DB.
-        ///     Finally, some items in the View are initialized.
         /// </summary>
         /// <param name="dbName">
         ///     The database name attached to test DB.
@@ -37,22 +36,6 @@ namespace TrackerVM
         public TrackerViewModel(string dbName)
         {
             _db = new HistoricalTrackingAccessMongoDB(dbName);
-        }
-
-        ///****************************************************************************************************
-        ///
-        /// <summary>
-        ///     Main View Model constructor. It attaches to the dialog service for the popups and initializes
-        ///     the instance of the HistoricalTrackingAccessMongoDB class.
-        /// </summary>
-        /// <param name="dbName">
-        ///     The database name attached to test DB.
-        /// </param>
-        ///
-        ///****************************************************************************************************
-        public TrackerViewModel(string dbName)
-        {
-            HistoricalTrackingAccessMongoDB.InitializeDB(dbName);
         }
 
         ///****************************************************************************************************

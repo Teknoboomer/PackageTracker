@@ -13,7 +13,6 @@ namespace HistoricalTracking
         private MongoClient _dbClient;
         private IMongoDatabase _database;
         private IMongoCollection<TrackingInfo> _packagesCollection;
-        private IMongoCollection<TrackingInfo> _packagesCollectionCloud;
 
         public HistoricalTrackingAccessMongoDB(string dbName)
         {
@@ -39,7 +38,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to save.
         /// </param>
-        public static void SaveHistory(TrackingInfo history)
+        public void SaveHistory(TrackingInfo history)
         {
             // Save the history to storage.
             try
@@ -65,7 +64,7 @@ namespace HistoricalTracking
         /// <param name="history">
         ///      The history to delete.
         /// </param>
-        public static void DeleteHistory(string trackingId)
+        public void DeleteHistory(string trackingId)
         {
             // Loop through the histories, creating a <TrackingInfo> node for each.
             try
@@ -87,7 +86,7 @@ namespace HistoricalTracking
         /// <returns>
         ///      A List of TrackingInfo that is the list of saved histories in storage.
         /// </returns>
-        public static List<TrackingInfo> GetSavedHistories()
+        public List<TrackingInfo> GetSavedHistories()
         {
             List<TrackingInfo> trackingHistories = new List<TrackingInfo>();
             try
