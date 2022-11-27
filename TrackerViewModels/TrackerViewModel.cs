@@ -1,5 +1,6 @@
 using ExternalTrackingequests;
 using HistoricalTracking;
+using MongoDB.Driver;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
@@ -21,7 +22,7 @@ namespace TrackerVM
 
         private string _internalErrorDescription;
         private IDialogService _dialogService;
-        private HistoricalTrackingAccessMongoDB _db;
+        private HistoricalTrackingAccess _db;
 
         ///****************************************************************************************************
         ///
@@ -33,9 +34,9 @@ namespace TrackerVM
         /// </param>
         ///
         ///****************************************************************************************************
-        public TrackerViewModel(string dbName)
+        public TrackerViewModel(string dbName, string connectionString)
         {
-            _db = new HistoricalTrackingAccessMongoDB(dbName);
+            _db = new HistoricalTrackingAccessMongoDB(dbName, connectionString);
         }
 
         ///****************************************************************************************************
@@ -53,7 +54,8 @@ namespace TrackerVM
         {
             _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
 
-            _db = new HistoricalTrackingAccessMongoDB("PackageTracker");
+            _db = HistoricalTrackingAccess.GetTrackingDB("PackageTracker", PtDbConnection.ConnectionString);
+
             TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
             DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
             PreviousTrackingRefresh = new DelegateCommand(async () => await RefreshPreviousTracking());
@@ -265,7 +267,7 @@ namespace TrackerVM
             // Allow spaces in the middle of the string to ease entry; i.e. as xxxx xxxx xxxx xxxx xxxx xx for USPS.
             string nonSpace = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))).ToUpper();
             bool isValidTrackingNUmber = (nonSpace.StartsWith("1Z") && IsvalidUPSCheckDigit(nonSpace))
-                || (nonSpace.Length == TRACKING_NUMBER_LENGTH && nonSpace.All(char.IsNumber));
+                || (nonSpace.Length >= TRACKING_NUMBER_LENGTH && nonSpace.All(char.IsNumber));
             return isValidTrackingNUmber;
         }
 
@@ -545,7 +547,7 @@ namespace TrackerVM
             checkDigit = (int)(Math.Ceiling(sum / 10.0d) * 10) - sum;
 
             // If the last digit matches the check digit the number is valid.
-            return lastDigit == checkDigit;
+                return lastDigit == checkDigit;
         }
         //01    UPS United States Next Day Air("Red")
         //02    UPS United States Second Day Air("Blue")

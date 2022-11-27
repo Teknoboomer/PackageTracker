@@ -12,8 +12,8 @@ namespace TDDTrackerTests
     public class Tests
     {
         private bool _configIsInitialized = false;
-        private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking");
-        private readonly HistoricalTrackingAccessMongoDB _db = new HistoricalTrackingAccessMongoDB("TestUSPSTracking");
+        private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking", PtDbConnection.ConnectionString);
+        private readonly HistoricalTrackingAccess _db = HistoricalTrackingAccess.GetTrackingDB("TestUSPSTracking", PtDbConnection.ConnectionString);
 
         [SetUp]
         public void Setup()

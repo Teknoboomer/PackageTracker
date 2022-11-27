@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows7.0</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HistoricalTracking\HistoricalTracking.csproj" />
     <ProjectReference Include="..\TrackerModel\TrackerModels.csproj" />
     <ProjectReference Include="..\TrackingRequests\TrackingRequests.csproj" />
   </ItemGroup>

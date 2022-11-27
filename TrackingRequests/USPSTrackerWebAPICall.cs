@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using TrackerConfiguration;
 
@@ -10,14 +11,19 @@ namespace ExternalTrackingequests
     public static class USPSTrackerWebAPICall
     {
         // HttpClient is intended to be instantiated once per application, rather than per-use.
-        static readonly HttpClient _httpClient = new HttpClient();
+        static readonly SocketsHttpHandler socketsHttpHandler = new SocketsHttpHandler()
+        {
+            PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+        };
+        static readonly HttpClient _httpClient = new HttpClient(socketsHttpHandler);
         static readonly string _myIP;
 
         static USPSTrackerWebAPICall()
         {
             string hostName = Dns.GetHostName(); // Retrive the Name of HOST
             // Get the IP
-            _myIP = Dns.GetHostEntry(hostName).AddressList[0].ToString();
+            object foo = Dns.GetHostEntry(hostName).AddressList;
+            _myIP = Dns.GetHostEntry(hostName).AddressList[1].ToString();
         }
 
         /// <summary>
