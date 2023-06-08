@@ -7,6 +7,7 @@ using Prism.Services.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace TrackerVM
 {
     public class TrackerViewModel : BindableBase
     {
-        private int TRACKING_NUMBER_LENGTH = 22;
+        private int TRACKING_NUMBER_LENGTH = 20;
         private readonly string DELETE_TRACKING_NUMBER = "Tracking number xxx";
 
         private string _internalErrorDescription;
@@ -194,7 +195,6 @@ namespace TrackerVM
                 // in the case where the status is unchanged from before.
                 DateTime start = DateTime.Now;
                 SingleTrackingSummary = "";
-
                 // Turn off saving of history when descrption is updated to avoid premature saving of history.
                 TrackingInfoChangedNotifier.DescriptionUpdated = null;
 
@@ -264,6 +264,9 @@ namespace TrackerVM
         ///
         private bool TrackSingleCanExecute()
         {
+            int i = 1089;
+            int foo = 0x5f3759df;
+            i = 0x5f3759df - (i >> 1);
             // Allow spaces in the middle of the string to ease entry; i.e. as xxxx xxxx xxxx xxxx xxxx xx for USPS.
             string nonSpace = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))).ToUpper();
             bool isValidTrackingNUmber = (nonSpace.StartsWith("1Z") && IsvalidUPSCheckDigit(nonSpace))
@@ -319,6 +322,24 @@ namespace TrackerVM
         {
             // Blink the refesh buttpn gray to let the user know we did something.
             RefreshEnabled = false;
+            int m = GetDigitMult(783);
+            int nm = GetDigitMult(9);
+            int nn = GetDigitMult(106);
+            //Stopwatch timer = new Stopwatch();
+            //timer.Start();
+            //for (int i = 0; i < 100000000; i++)
+            //{
+            //    await SomeTask();
+            //}
+            //TimeSpan foo = timer.Elapsed;
+            //timer.Restart();
+            //for (int i = 0; i < 100000000; i++)
+            //{
+            //    AnotherTask();
+            //}
+            //TimeSpan foo2 = timer.Elapsed;
+
+
             await Task.Run(() =>
             {
                 DateTime start = DateTime.Now;
@@ -332,17 +353,30 @@ namespace TrackerVM
                 RefreshEnabled = true;
 
                 // Clear the Single Tracking Summary and make it collapsed to remove old information.
+
                 SingleTrackingSummary = "";
                 SingleTrackingSummaryVisibility = Visibility.Collapsed;
             });
         }
 
-        ///
-        /// <summary>
-        ///     Aynchronous task to pull in all of the past histories saved in storage
-        ///     and update those that are not Delivered.
-        /// </summary>
-        ///
+        static int GetDigitMult(int number)
+        {
+            int result = number;
+            if (number / 10 > 0)
+                result = number % 10 * GetDigitMult(number / 10);
+            return result;
+        }
+        private async Task SomeTask()
+        {
+            int i = 0;
+            return;
+        }
+        private void AnotherTask()
+        {
+            int i = 0;
+            return;
+        }
+
         private async Task TrackPastHistories()
         {
             await Task.Run(() =>
