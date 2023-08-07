@@ -33,7 +33,7 @@ namespace HistoricalTracking
         /// </returns>
         public virtual List<TrackingInfo> GetSavedHistories() => throw new NotImplementedException();
 
-        public static HistoricalTrackingAccess GetTrackingDB(string dbName, string connectionString)
+        public static HistoricalTrackingAccess? GetTrackingDB(string dbName, string connectionString)
         {
             HistoricalTrackingAccess? db = null;
 

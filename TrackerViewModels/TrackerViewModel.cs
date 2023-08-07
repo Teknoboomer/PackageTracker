@@ -1,4 +1,3 @@
-using ExternalTrackingequests;
 using HistoricalTracking;
 using MongoDB.Driver;
 using Prism.Commands;
@@ -13,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TrackerModel;
+using TrackingRequests.Impl;
 
 namespace TrackerVM
 {
@@ -184,7 +184,6 @@ namespace TrackerVM
         private async Task TrackSingle()
         {
             TrackingInfo singleTrackingHistory = null;
-            string response = "";
             TrackingRequestStatus status = TrackingRequestStatus.InternalError;
 
             await Task.Run(() =>
@@ -201,8 +200,9 @@ namespace TrackerVM
                 // Make the web call to USPS to get the tracking historiy and parse it.
                 // UPS Access Code: ADB7035AF6F2FA85
                 _singleTrackingId = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))); // Get rid of any whitespace.
-                response = USPSTrackerWebAPICall.GetTrackingFieldInfo(_singleTrackingId);
-                singleTrackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", _singleTrackingDescription);
+                RequestHanlder requestHandler = new RequestHanlder(_singleTrackingId);
+                singleTrackingHistory = requestHandler.HandleTrackingRequest(_singleTrackingId, "");
+                singleTrackingHistory.Description = _singleTrackingDescription;
 
                 // Wait for the rest of the one second delay.
                 TimeSpan duration = DateTime.Now - start;
@@ -218,7 +218,6 @@ namespace TrackerVM
                 }
                 else
                 {
-                    // For single tracking, peel off the first tracking history result.
                     // Set the Single Tracking Summary and status.
                     SingleTrackingSummary = singleTrackingHistory.StatusSummary;
                     SingleTrackingHistory = singleTrackingHistory.TrackingHistory;
@@ -264,9 +263,6 @@ namespace TrackerVM
         ///
         private bool TrackSingleCanExecute()
         {
-            int i = 1089;
-            int foo = 0x5f3759df;
-            i = 0x5f3759df - (i >> 1);
             // Allow spaces in the middle of the string to ease entry; i.e. as xxxx xxxx xxxx xxxx xxxx xx for USPS.
             string nonSpace = string.Concat(_singleTrackingId.Where(c => !char.IsWhiteSpace(c))).ToUpper();
             bool isValidTrackingNUmber = (nonSpace.StartsWith("1Z") && IsvalidUPSCheckDigit(nonSpace))
@@ -322,23 +318,6 @@ namespace TrackerVM
         {
             // Blink the refesh buttpn gray to let the user know we did something.
             RefreshEnabled = false;
-            int m = GetDigitMult(783);
-            int nm = GetDigitMult(9);
-            int nn = GetDigitMult(106);
-            //Stopwatch timer = new Stopwatch();
-            //timer.Start();
-            //for (int i = 0; i < 100000000; i++)
-            //{
-            //    await SomeTask();
-            //}
-            //TimeSpan foo = timer.Elapsed;
-            //timer.Restart();
-            //for (int i = 0; i < 100000000; i++)
-            //{
-            //    AnotherTask();
-            //}
-            //TimeSpan foo2 = timer.Elapsed;
-
 
             await Task.Run(() =>
             {
@@ -357,24 +336,6 @@ namespace TrackerVM
                 SingleTrackingSummary = "";
                 SingleTrackingSummaryVisibility = Visibility.Collapsed;
             });
-        }
-
-        static int GetDigitMult(int number)
-        {
-            int result = number;
-            if (number / 10 > 0)
-                result = number % 10 * GetDigitMult(number / 10);
-            return result;
-        }
-        private async Task SomeTask()
-        {
-            int i = 0;
-            return;
-        }
-        private void AnotherTask()
-        {
-            int i = 0;
-            return;
         }
 
         private async Task TrackPastHistories()
@@ -488,27 +449,19 @@ namespace TrackerVM
                 // Do not update outdated undelivered tracking requests. USPS IDs for valid for only 120 days.
                 if (!history.TrackingComplete && history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
                 {
-                    string response = USPSTrackerWebAPICall.GetTrackingFieldInfo(history.TrackingId);
-                    if (response.StartsWith("Error"))
+                    RequestHanlder requestHandler = new RequestHanlder(history.TrackingId);
+                    TrackingInfo update = requestHandler.HandleTrackingRequest(history.TrackingId, "");
+                    if (update.TrackingStatus == TrackingRequestStatus.InternalError)
                     {
                         hadInternalError = true;
-                        _internalErrorDescription = response;
+                        _internalErrorDescription = update.StatusSummary;
                     }
                     else
                     {
-                        TrackingInfo update = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", history.Description);
-                        if (update.TrackingStatus == TrackingRequestStatus.InternalError)
-                        {
-                            hadInternalError = true;
-                            _internalErrorDescription = update.StatusSummary;
-                        }
-                        else
-                        {
-                            update.Description = history.Description; // Restore the Description.
-                            update.Id = history.Id; // Restore the Id.
-                            trackingHistories[i] = update;  // Update the history.
-                            _db.SaveHistory(trackingHistories[i]);
-                        }
+                        update.Description = history.Description; // Restore the Description.
+                        update.Id = history.Id; // Restore the Id.
+                        trackingHistories[i] = update;  // Update the history.
+                        _db.SaveHistory(trackingHistories[i]);
                     }
                 }
                 else

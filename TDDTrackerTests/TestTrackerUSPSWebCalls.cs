@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using TrackerConfiguration;
 using TrackerModel;
 using TrackerVM;
+using TrackingRequests.Impl;
 
 namespace TDDTrackerTests
 {
@@ -13,7 +14,7 @@ namespace TDDTrackerTests
     {
         private bool _configIsInitialized = false;
         private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking", PtDbConnection.ConnectionString);
-        private readonly HistoricalTrackingAccess _db = HistoricalTrackingAccess.GetTrackingDB("TestUSPSTracking", PtDbConnection.ConnectionString);
+        private readonly HistoricalTrackingAccess? _db = HistoricalTrackingAccess.GetTrackingDB("TestUSPSTracking", PtDbConnection.ConnectionString);
 
         [SetUp]
         public void Setup()
@@ -28,10 +29,9 @@ namespace TDDTrackerTests
         [Test] // Assumes Internet is attached.
         public void RoundTripFromUSPSValidReturn()
         {
-            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("4444444444444444444444");
-            Assert.That(response, Is.Not.EqualTo(null));
+            TrackingInfo info = USPSTrackerWebAPICall.GetTrackingFieldInfo("4444444444444444444444", "");
+            Assert.That(info, Is.Not.EqualTo(null));
 
-            TrackingInfo info = USPSTrackingResponseParser.USPSParseTrackingXml(response, "", "");
             if (info != null)
             {
                 Assert.Multiple(() =>
@@ -48,10 +48,10 @@ namespace TDDTrackerTests
         [Test]
         public void ActiveUSPSWebServiceCall()
         {
-            string knownResponse = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Error><Number>80040B19</Number><Description>XML Syntax Error: Please check the XML request to see if it can be parsed.(B)</Description><Source>USPSCOM::DoAuth</Source></Error>";
-            string response = USPSTrackerWebAPICall.GetTrackingFieldInfo("EJ123\"456780US");
+            string knownResponse = "-2147219302The tracking number may be incorrect or the status update is not yet available. Please verify your tracking number and try again later.";
+            TrackingInfo response = USPSTrackerWebAPICall.GetTrackingFieldInfo("456780US", "");
 
-            Assert.That(knownResponse, Is.EqualTo(response));
+            Assert.That(knownResponse, Is.EqualTo(response.StatusSummary));
         }
 
         [Test]
@@ -559,6 +559,8 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             ClearDB(); // Reset the test DB.
+            Assert.IsNotNull(_db);
+
             _vm.DisableDescriptionUpdateDelegate();
 
             List<TrackingInfo> histories = new List<TrackingInfo>();
@@ -716,6 +718,7 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             ClearDB(); // Clear out the DB;
+            Assert.IsNotNull(_db);
 
             List<TrackingInfo> savedHistories = _db.GetSavedHistories();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
@@ -736,17 +739,20 @@ namespace TDDTrackerTests
 
         private void ClearDB()
         {
-            List<TrackingInfo> savedHistories = _db.GetSavedHistories();
-            if (savedHistories.Count < 5) // Make sure we are not hitting production.
+            if (_db != null)
             {
-                foreach (TrackingInfo history in savedHistories)
+                List<TrackingInfo> savedHistories = _db.GetSavedHistories();
+                if (savedHistories.Count < 5) // Make sure we are not hitting production.
                 {
-                    _db.DeleteHistory(history.TrackingId);
+                    foreach (TrackingInfo history in savedHistories)
+                    {
+                        _db.DeleteHistory(history.TrackingId);
+                    }
                 }
-            }
-            else
-            {
-                throw new Exception("Hitting prodution!!!!");
+                else
+                {
+                    throw new Exception("Hitting prodution!!!!");
+                }
             }
         }
     }
