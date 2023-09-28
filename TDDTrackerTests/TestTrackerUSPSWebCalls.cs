@@ -13,8 +13,8 @@ namespace TDDTrackerTests
     public class Tests
     {
         private bool _configIsInitialized = false;
-        private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking", PtDbConnection.ConnectionString);
-        private readonly HistoricalTrackingAccess? _db = HistoricalTrackingAccess.GetTrackingDB("TestUSPSTracking", PtDbConnection.ConnectionString);
+        private readonly TrackerViewModel _vm = new TrackerViewModel("TestUSPSTracking");
+        private readonly HistoricalTrackingAccess? _db = HistoricalTrackingAccess.GetTrackingDB("TestUSPSTracking");
 
         [SetUp]
         public void Setup()

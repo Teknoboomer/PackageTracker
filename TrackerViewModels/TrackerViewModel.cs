@@ -35,9 +35,9 @@ namespace TrackerVM
         /// </param>
         ///
         ///****************************************************************************************************
-        public TrackerViewModel(string dbName, string connectionString)
+        public TrackerViewModel(string dbName)
         {
-            _db = new HistoricalTrackingAccessMongoDB(dbName, connectionString);
+            _db = HistoricalTrackingAccess.GetTrackingDB(dbName);
         }
 
         ///****************************************************************************************************
@@ -55,7 +55,7 @@ namespace TrackerVM
         {
             _dialogService = dialogService;  // Get a pointer to the Dialog service to show the Delete Tracking dialog.
 
-            _db = HistoricalTrackingAccess.GetTrackingDB("PackageTracker", PtDbConnection.ConnectionString);
+            _db = HistoricalTrackingAccess.GetTrackingDB("PackageTracker");
 
             TrackSingleCommand = new DelegateCommand(async () => await TrackSingle(), TrackSingleCanExecute);
             DeleteHistoryCommand = new DelegateCommand<object>(OnDeleteHistoryCommand);
@@ -204,12 +204,6 @@ namespace TrackerVM
                 singleTrackingHistory = requestHandler.HandleTrackingRequest(_singleTrackingId, "");
                 singleTrackingHistory.Description = _singleTrackingDescription;
 
-                // Wait for the rest of the one second delay.
-                TimeSpan duration = DateTime.Now - start;
-                int waitTime = 1000 - (int)duration.TotalMilliseconds;
-                if (waitTime > 0)
-                    Thread.Sleep((int)waitTime);
-
                 // Null is returned if there is an internal error with the Internet.
                 if (singleTrackingHistory == null)
                 {
@@ -227,10 +221,20 @@ namespace TrackerVM
                 // Update the Single Tracking Summary and make it visible.
                 SingleTrackingSummaryVisibility = Visibility.Visible;
                 TrackSinglePackageStatusColor = status;
+
+                // Wait for the rest of the one second delay.
+                TimeSpan duration = DateTime.Now - start;
+                int waitTime = 1000 - (int)duration.TotalMilliseconds;
+                if (waitTime > 0)
+                    Thread.Sleep((int)waitTime);
             });
 
+            // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
+            // by the view.
+            TrackingInfoChangedNotifier.DescriptionUpdated = DescriptionUpdated;
+
             // If there were no errors, add this tracking to the list of tracked packages unless it is already there.
-            // Save the histories to storage.
+            // Save the history to storage.
             if (status != TrackingRequestStatus.InternalError)
             {
                 if (status == TrackingRequestStatus.Delivered || status == TrackingRequestStatus.InTransit || status == TrackingRequestStatus.NoRecord)
@@ -247,10 +251,6 @@ namespace TrackerVM
                     SingleTrackingId = "";
                 }
             }
-
-            // Restore/set the Delegate to allow TrackingInfo to inform the VM of a Description change
-            // by the view.
-            TrackingInfoChangedNotifier.DescriptionUpdated = DescriptionUpdated;
         }
 
         ///
@@ -442,6 +442,8 @@ namespace TrackerVM
 
             // Loop through all of the histories and update the tracking for those not yet
             // delivered before adding them into the list.
+            //PtDbConnection.ConnectionString = "mongodb://Runeweaver:Fourcats4@ac-oqlurky-shard-00-00.ufwkgz2.mongodb.net:27017,ac-oqlurky-shard-00-01.ufwkgz2.mongodb.net:27017,ac-oqlurky-shard-00-02.ufwkgz2.mongodb.net:27017/?ssl=true&replicaSet=atlas-133h6i-shard-0&authSource=admin&retryWrites=true&w=majority";
+            //_db = HistoricalTrackingAccess.GetTrackingDB("PackageTracker");
             for (int i = 0; i < trackingHistories.Count; i++)
             {
                 TrackingInfo history = trackingHistories[i];
@@ -469,8 +471,6 @@ namespace TrackerVM
                     // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
                     if (!history.TrackingComplete && history.FirstEventDateTime < DateTime.Now.AddDays(-120))
                     {
-                        List<TrackingInfo> trackingList = _db.GetSavedHistories();
-
                         history.TrackingComplete = true;
                         history.TrackingStatus = TrackingRequestStatus.Lost;
                         trackingHistories[i] = history;  // Update the history.

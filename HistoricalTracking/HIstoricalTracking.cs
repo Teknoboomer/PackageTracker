@@ -4,11 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TrackerModel;
+using Windows.System;
 
 namespace HistoricalTracking
 {
     public abstract class HistoricalTrackingAccess
     {
+        protected HistoricalTrackingAccess()
+        {
+        }
+
         /// <summary>
         ///      Virtual method to save the history to storage.
         /// </summary>
@@ -33,13 +38,13 @@ namespace HistoricalTracking
         /// </returns>
         public virtual List<TrackingInfo> GetSavedHistories() => throw new NotImplementedException();
 
-        public static HistoricalTrackingAccess? GetTrackingDB(string dbName, string connectionString)
+        public static HistoricalTrackingAccess? GetTrackingDB(string dbName)
         {
             HistoricalTrackingAccess? db = null;
 
-            if (connectionString.Contains("mongodb"))
+            if (PtDbConnection.ConnectionString.Contains("mongodb"))
             {
-                db = new HistoricalTrackingAccessMongoDB(dbName, PtDbConnection.ConnectionString);
+                db = new HistoricalTrackingAccessMongoDB(dbName);
             }
             return db;
         }

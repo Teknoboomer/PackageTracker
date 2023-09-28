@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using TrackerModel;
 
 
@@ -10,15 +11,15 @@ namespace HistoricalTracking
 {
     public class HistoricalTrackingAccessMongoDB : HistoricalTrackingAccess
     {
-        private MongoClient _dbClient;
+        private MongoClient _dbClient;  
         private IMongoDatabase _database;
         private IMongoCollection<TrackingInfo> _packagesCollection;
 
-        public HistoricalTrackingAccessMongoDB(string dbName, string connectionString)
+        public HistoricalTrackingAccessMongoDB(string dbName)
         {
             try
             {
-                MongoClientSettings settings = MongoClientSettings.FromConnectionString(connectionString);
+                MongoClientSettings settings = MongoClientSettings.FromConnectionString(PtDbConnection.ConnectionString);
                 _dbClient = new MongoClient(settings);
                 _database = _dbClient.GetDatabase(dbName);
                 _packagesCollection = _database.GetCollection<TrackingInfo>("TrackingInfo");
@@ -49,7 +50,7 @@ namespace HistoricalTracking
             }
             catch (Exception e)
             {
-                throw new Exception("GetSavedHistories: " + e.Message);
+                throw new Exception("SaveHistory: " + e.Message);
             }
 
             return;
@@ -71,7 +72,7 @@ namespace HistoricalTracking
             }
             catch (Exception e)
             {
-                throw new Exception("GetSavedHistories: " + e.Message);
+                throw new Exception("DeleteHistory: " + e.Message);
             }
 
             return;
@@ -89,13 +90,14 @@ namespace HistoricalTracking
             try
             {
                 FilterDefinition<TrackingInfo> filter = Builders<TrackingInfo>.Filter.Ne(x => x.TrackingId, "");
+                var foo = _packagesCollection.CountDocuments(filter);
                 trackingHistories = _packagesCollection.Find(filter).ToList();
             }
             catch (Exception e)
             {
                 throw new Exception("GetSavedHistories: " + e.Message);
             }
-
+            //trackingHistories.ForEach(x => x.TrackingStatus = TrackingRequestStatus.InTransit);
             return trackingHistories;
         }
     }
