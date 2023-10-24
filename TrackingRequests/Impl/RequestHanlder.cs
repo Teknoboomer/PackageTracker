@@ -13,6 +13,7 @@ namespace TrackingRequests.Impl
         private string _requestId;
         private RequestHandlerInterface _handler;
 
+        // Request handler will either be USPS or UPS.
         public RequestHanlder(string trackingId)
         {
             _requestId = trackingId;
@@ -24,7 +25,7 @@ namespace TrackingRequests.Impl
 
         public TrackingInfo HandleTrackingRequest(string trackingRequest, string userZip)
         {
-            TrackingInfo trackingInfo = _handler.HandleTrackingRequest(trackingRequest, "userZip");
+            TrackingInfo trackingInfo = _handler.HandleTrackingRequest(trackingRequest, userZip);
             return trackingInfo;
         }
     }

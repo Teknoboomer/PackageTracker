@@ -383,7 +383,7 @@ namespace TrackerVM
         ///     Setup the custom dialog popup with the values for history tracking Id delete.
         /// </summary>
         /// <param name="trackingId">
-        ///     Our generic Diialog Delgate takes an object as a parameter for flexibility.
+        ///     Our generic Dialog Delgate takes an object as a parameter for flexibility.
         ///     In this instance, the parameter is the tracking ID, a string.
         /// </param>
         ///
@@ -448,33 +448,37 @@ namespace TrackerVM
             {
                 TrackingInfo history = trackingHistories[i];
 
-                // Do not update outdated undelivered tracking requests. USPS IDs for valid for only 120 days.
-                if (!history.TrackingComplete && history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
+                // Update only undelivered tracking requests.
+                if (!history.TrackingComplete)
                 {
-                    RequestHanlder requestHandler = new RequestHanlder(history.TrackingId);
-                    TrackingInfo update = requestHandler.HandleTrackingRequest(history.TrackingId, "");
-                    if (update.TrackingStatus == TrackingRequestStatus.InternalError)
+                    // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
+                    // USPS IDs for valid for only 120 days.
+                    if (history.FirstEventDateTime >= DateTime.Now.AddDays(-12))
                     {
-                        hadInternalError = true;
-                        _internalErrorDescription = update.StatusSummary;
+                        RequestHanlder requestHandler = new RequestHanlder(history.TrackingId);
+                        TrackingInfo update = requestHandler.HandleTrackingRequest(history.TrackingId, "");
+                        if (update.TrackingStatus == TrackingRequestStatus.InternalError)
+                        {
+                            hadInternalError = true;
+                            _internalErrorDescription = update.StatusSummary;
+                        }
+                        else
+                        {
+                            update.Description = history.Description; // Restore the Description.
+                            update.Id = history.Id; // Restore the Id.
+                            trackingHistories[i] = update;  // Update the history.
+                            _db.SaveHistory(trackingHistories[i]);
+                        }
                     }
                     else
                     {
-                        update.Description = history.Description; // Restore the Description.
-                        update.Id = history.Id; // Restore the Id.
-                        trackingHistories[i] = update;  // Update the history.
-                        _db.SaveHistory(trackingHistories[i]);
-                    }
-                }
-                else
-                {
-                    // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
-                    if (!history.TrackingComplete && history.FirstEventDateTime < DateTime.Now.AddDays(-120))
-                    {
-                        history.TrackingComplete = true;
-                        history.TrackingStatus = TrackingRequestStatus.Lost;
-                        trackingHistories[i] = history;  // Update the history.
-                        _db.SaveHistory(trackingHistories[i]);
+                        if (history.FirstEventDateTime < DateTime.Now.AddDays(-12))
+                        {
+                            history.TrackingComplete = true;
+                            history.TrackingStatus = TrackingRequestStatus.Lost;
+                            trackingHistories[i] = history;  // Update the history.
+                            _db.SaveHistory(trackingHistories[i]);
+                        }
                     }
                 }
             }
@@ -486,6 +490,11 @@ namespace TrackerVM
             return hadInternalError;
         }
 
+        /// <summary>
+        /// Setting the change notifier to null disables the notifier.
+        /// This is necessary when updating the description in TrackingInfo
+        /// and saving the TrackingInfo is not desired.
+        /// </summary>
         public void DisableDescriptionUpdateDelegate()
         {
             TrackingInfoChangedNotifier.DescriptionUpdated = null;

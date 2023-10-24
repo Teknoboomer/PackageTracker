@@ -61,7 +61,7 @@ namespace TDDTrackerTests
                     "Had an error " + "\n" +
                 "</Error>";
 
-            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(externalErrorRecordResponse, "77459", "");
+            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(externalErrorRecordResponse, "77459");
             Assert.That(trackingHistory.TrackingStatus, Is.EqualTo(TrackingRequestStatus.InternalError));
             Assert.That(trackingHistory.StatusSummary, Is.EqualTo("There was an internal error. \n \nHad an error \n"));
         }
@@ -75,7 +75,7 @@ namespace TDDTrackerTests
                 "</Error>" + "\n" +
                 "</TrackResponse>";
 
-            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(trackingErrorResponse, "77459", "");
+            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(trackingErrorResponse, "77459");
             Assert.That(trackingHistory != null);
             if (trackingHistory != null)
             {
@@ -93,7 +93,7 @@ namespace TDDTrackerTests
                 "</TrackInfo>" + "\n" +
                 "</TrackResponse>";
 
-            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(noRecordResponse, "77459", "");
+            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(noRecordResponse, "77459");
             Assert.That(trackingHistory != null);
         }
 
@@ -113,7 +113,7 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
 
-            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(notYetResponse, "77459", "");
+            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(notYetResponse, "77459");
             Assert.That(trackingHistory != null);
         }
 
@@ -161,7 +161,7 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
-            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(firstResponse, "77459", "");
+            TrackingInfo trackingHistory = USPSTrackingResponseParser.USPSParseTrackingXml(firstResponse, "77459");
             Assert.That(trackingHistory, Is.Not.EqualTo(null));
 
             if (trackingHistory != null)
@@ -296,13 +296,13 @@ namespace TDDTrackerTests
                     "</TrackInfo>" + "\n" +
                 "</TrackResponse>" + "\n";
 
-            TrackingInfo trackingInfo = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "A Descrption");
+            TrackingInfo trackingInfo = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459");
             Assert.That(trackingInfo, Is.Not.EqualTo(null));
             Assert.Multiple(() =>
             {
                 Assert.That(trackingInfo.TrackingStatus, Is.EqualTo(TrackingRequestStatus.Delivered));
                 Assert.That(trackingInfo.TrackingId, Is.EqualTo("9374889671006176791375"));
-                Assert.That(trackingInfo.Description, Is.EqualTo("A Descrption"));
+                Assert.That(trackingInfo.Description, Is.EqualTo("A Description"));
             });
 
             // Make sure we picked out latest DateTime from the TrackDetail nodes.
@@ -564,11 +564,11 @@ namespace TDDTrackerTests
             _vm.DisableDescriptionUpdateDelegate();
 
             List<TrackingInfo> histories = new List<TrackingInfo>();
-            TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459", "");
+            TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse1, "77459");
             histories.Add(history);
             _db.SaveHistory(history); // Save history to storage.
 
-            history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459", "");
+            history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse2, "77459");
             histories.Add(history);
             _db.SaveHistory(history); // Save history to storage.
             Assert.That(histories.Count, Is.EqualTo(2)); // Should be two TrackingInfos.
@@ -721,7 +721,7 @@ namespace TDDTrackerTests
             Assert.IsNotNull(_db);
 
             List<TrackingInfo> savedHistories = _db.GetSavedHistories();
-            TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459", "");
+            TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459");
             Assert.That(history, Is.Not.EqualTo(null)); // Should have gotten something back.
 
             List<TrackingInfo> trackings = new List<TrackingInfo>();

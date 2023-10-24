@@ -5,6 +5,7 @@ using System;
 
 namespace TrackerVM
 {
+    // Class for the DeleteTrackedItemDialog dialogue box.
     public class DialogViewModel : BindableBase, IDialogAware
     {
         private string _iconSource;
@@ -77,6 +78,11 @@ namespace TrackerVM
             ActionParams = parameters;
         }
 
+        /// <summary>
+        /// This method handles the user input from the DeleteTrackedItemDialog dialogue
+        /// and closes the dialogue.
+        /// </summary>
+        /// <param name="answer"></param>
         private void OnDeleteHistoryCommand(object answer)
         {
             ButtonResult buttonResult = ButtonResult.None;

@@ -10,7 +10,7 @@ namespace TrackerModel
         public int LogRounds { private get; set; }
 
         /// <summary>
-        /// Hashes the supplied user name and password.
+        /// Hashes the supplied user name and password using Sha 512.
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="password"></param>
@@ -18,7 +18,7 @@ namespace TrackerModel
         public string GetHashedPassword(string userName, string password)
         {
             int roundCount = 2 << LogRounds;
-            string saltedPassword = userName + "|" + password;
+            string saltedPassword = userName + "|" + password;  // Create a Salt
             byte[] saltedPasswordBytes = Encoding.UTF8.GetBytes(saltedPassword);
             byte[] result;
             SHA512 shaM = SHA512.Create();
@@ -31,6 +31,7 @@ namespace TrackerModel
                 byte[] nextBytes = thisHash.Concat(saltedPasswordBytes).ToArray();
                 thisHash = shaM.ComputeHash(nextBytes);
             }
+
             return Convert.ToBase64String(thisHash);
         }
     }

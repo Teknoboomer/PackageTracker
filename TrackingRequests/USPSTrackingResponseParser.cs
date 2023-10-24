@@ -15,11 +15,11 @@ namespace ExternalTrackingequests
         const string _notYetAvailable = "A status update is not yet available on your package.";
 
         /// <summary>
-        ///     Takes the response from the WebService call to the USPS and parses it.
+        ///     Takes the httpResponse from the WebService call to the USPS and parses it.
         ///     THe user's zip is used to indicate an incoming or outgoing package.
         /// </summary>
         /// <param name="responseXml">
-        ///     The response from the GET to USPS for the tracking ID.
+        ///     The httpResponse from the GET to USPS for the tracking ID.
         /// </param>
         /// <param name="userZip">
         ///     The user's zip.
@@ -28,13 +28,14 @@ namespace ExternalTrackingequests
         ///     The descrption.
         /// </param>
         /// <returns>
-        ///     The TrackingInfo objects that is parsed out of the USPS response.
+        ///     The TrackingInfo objects that is parsed out of the USPS httpResponse.
         /// </returns>
-        public static TrackingInfo USPSParseTrackingXml(string responseXml, string userZip, string description)
+        public static TrackingInfo USPSParseTrackingXml(string responseXml, string userZip)
         {
-            TrackingInfo trackResponseEvents = new TrackingInfo();
-            string errorSummary = "";
+            TrackingInfo parsedResponse = new TrackingInfo();
             bool hadError = true;  // Assume there was an error.
+            parsedResponse.TrackingStatus = TrackingRequestStatus.InternalError;
+            string errorSummary = "There was an external error. Check the Internet connection.";
 
             try
             {
@@ -48,51 +49,48 @@ namespace ExternalTrackingequests
                 {
                     errorSummary = "There was an internal error. \n" + xmlDoc.Element("Error").Value;
                 }
-                // Check for a resonse that does not have a <TrackResponse> node. This can happen if there
-                // is a response from other than USPS. This turned up during testing when ATT&T's network had a node malfunction
-                // and gave an error response that would show up in a webpage for user diagnostics.
-                else if (root == null)
+                // Make sure resonse has a <TrackResponse> node. It can be missing if there
+                // is a httpResponse from other than USPS. This turned up during testing when ATT&T's network had a node malfunction
+                // and gave an error httpResponse that would show up in a webpage for user diagnostics.
+                if (root != null)
                 {
-                    errorSummary = "There was an external error. Check the Internet connection.";
-                }
-                else if (root.Element("Error") != null)
-                {
-                    errorSummary = root.Element("Error").Value;
-                }
-                else
-                {
-                    XElement trackResponse = root.Element("TrackInfo");
-
-                    // An error can be returned by USPS if it finds something it does not like in the request, again not likely but can happen.
-                    XElement error = trackResponse.Element("Error");
-                    if (trackResponse.Element("Error") == null)
+                    if (root.Element("Error") != null)
                     {
-                        hadError = false;
-
-                        // USPS can return multiple <TrackInfo> elements, but we just use the first.
-                        XElement trackInfo = root.Elements("TrackInfo").First();
-                        trackResponseEvents = USPSPopulateTrackingHistoryFromXml(trackInfo, userZip, description);
+                        errorSummary = root.Element("Error").Value;
                     }
                     else
                     {
-                        errorSummary = trackResponse.Element("Error").Value;
+                        XElement trackResponse = root.Element("TrackInfo");
+
+                        // An error can be returned by USPS if it finds something it does not like in the request, again not likely but can happen.
+                        XElement error = trackResponse.Element("Error");
+                        if (error == null)
+                        {
+                            hadError = false;
+
+                            // USPS can return multiple <TrackInfo> elements, but we just use the first.
+                            XElement trackInfo = root.Elements("TrackInfo").First();
+                            parsedResponse = USPSPopulateTrackingHistoryFromXml(trackInfo, userZip, "A Description");
+                        }
+                        else
+                        {
+                            errorSummary = error.Value;
+                        }
                     }
                 }
             }
             catch (Exception e)
             {
-                // Add the exception description into the event list so it will display as the StatusSummary.
-                errorSummary = "There was an external error. Check the Internet connection. Error: \n\t" + e.Message;
+                // No need to do anything since error was assumed.
             }
 
             // If there was an error, set the Summary and Status.
             if (hadError)
             {
-                trackResponseEvents.StatusSummary = errorSummary;
-                trackResponseEvents.TrackingStatus = TrackingRequestStatus.InternalError;
+                parsedResponse.StatusSummary = errorSummary;
             }
 
-            return trackResponseEvents;
+            return parsedResponse;
         }
 
         /// <summary>
