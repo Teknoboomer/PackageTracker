@@ -559,7 +559,7 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             ClearDB(); // Reset the test DB.
-            Assert.IsNotNull(_db);
+            Assert.That(_db != null);
 
             _vm.DisableDescriptionUpdateDelegate();
 
@@ -718,7 +718,7 @@ namespace TDDTrackerTests
                 "</TrackResponse>" + "\n";
 
             ClearDB(); // Clear out the DB;
-            Assert.IsNotNull(_db);
+            Assert.That(_db != null);
 
             List<TrackingInfo> savedHistories = _db.GetSavedHistories();
             TrackingInfo history = USPSTrackingResponseParser.USPSParseTrackingXml(goodResponse, "77459");

@@ -34,6 +34,7 @@ namespace HistoricalTracking
         ///      Save the history to storage.
         /// </summary>
         /// <param name="history">
+        /// 
         ///      The history to save.
         /// </param>
         public override void SaveHistory(TrackingInfo history)

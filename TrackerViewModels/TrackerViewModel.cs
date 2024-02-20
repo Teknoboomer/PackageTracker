@@ -453,7 +453,7 @@ namespace TrackerVM
                 {
                     // If it was not delivered and the ID has expired, set the status to Lost and tracking completed.
                     // USPS IDs for valid for only 120 days.
-                    if (history.FirstEventDateTime >= DateTime.Now.AddDays(-12))
+                    if (history.FirstEventDateTime >= DateTime.Now.AddDays(-120))
                     {
                         RequestHanlder requestHandler = new RequestHanlder(history.TrackingId);
                         TrackingInfo update = requestHandler.HandleTrackingRequest(history.TrackingId, "");
@@ -472,7 +472,7 @@ namespace TrackerVM
                     }
                     else
                     {
-                        if (history.FirstEventDateTime < DateTime.Now.AddDays(-12))
+                        if (history.FirstEventDateTime < DateTime.Now.AddDays(-120))
                         {
                             history.TrackingComplete = true;
                             history.TrackingStatus = TrackingRequestStatus.Lost;

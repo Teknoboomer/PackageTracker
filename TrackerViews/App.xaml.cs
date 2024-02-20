@@ -1,4 +1,5 @@
-﻿using Prism.Ioc;
+﻿using Prism.Commands;
+using Prism.Ioc;
 using Prism.Mvvm;
 using Prism.Services.Dialogs;
 using System.Windows;
@@ -11,6 +12,9 @@ namespace PackageTrackerWPF
     /// </summary>
     public partial class App
     {
+        public DelegateCommand? TrackSingleCommand { get; private set; }
+        private TrackerViewModel _viewModel = new TrackerViewModel();
+
         protected override Window CreateShell()
         {
             MainWindow w = Container.Resolve<MainWindow>();

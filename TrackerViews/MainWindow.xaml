@@ -20,8 +20,13 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Height="Auto" Width="1220" Margin="0,0,0,0" Orientation="Vertical" >
             <!-- Main Title -->
-            <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,10,0,10" ></TextBlock>
-
+            <Grid Width="1220" HorizontalAlignment="Stretch">
+                <TextBlock Style="{DynamicResource MainTitleText}" Text = "Package Tracking" Margin = "0,10,0,10" Width="auto"></TextBlock>
+                <!-- Single tracker Track button -->
+                <Button  Height="30" Width="30" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <Image Source="Settings.png"/>
+                </Button>
+            </Grid>
             <!-- Block for Single Tracking Number Entry and presentation of Status Summary -->
             <Grid Background="LightBlue" Width="auto">
                 <StackPanel Orientation="Vertical" >
@@ -42,7 +47,11 @@
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Left" >
                                 <TextBlock Text="Tracking Number" Style="{DynamicResource TitleText}" />
                                 <TextBox  Style="{DynamicResource SingleTrackerDataTextBox}" Text="{Binding SingleTrackingId, UpdateSourceTrigger=PropertyChanged}"  
-                                         Width="250"/>
+                                         Width="250" Name="TrackingNumber">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding TrackSingleCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
                             </StackPanel>
                         </Border>
                         <!-- Single tracker Track button -->

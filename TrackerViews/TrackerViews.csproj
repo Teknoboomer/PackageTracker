@@ -2,13 +2,17 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.22621.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ApplicationIcon>arrows_twodirections_19331.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="settings.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="arrows_twodirections_19331.ico" />
@@ -24,6 +28,12 @@
     <ProjectReference Include="..\TrackerConfiguration\TrackerConfiguration.csproj" />
     <ProjectReference Include="..\TrackerModel\TrackerModels.csproj" />
     <ProjectReference Include="..\TrackerViewModels\TrackerViewModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="settings.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
